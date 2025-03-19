@@ -1,0 +1,81 @@
+# gradle
+
+.gradle/
+build/
+out/
+classes/
+
+# eclipse
+
+*.launch
+
+# idea
+
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# vscode
+
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+
+# macos
+
+*.DS_Store
+
+# fabric
+
+run/
+
+# java
+
+hs_err_*.log
+replay_*.log
+*.hprof
+*.jfr
+
+
+
+
+
+
+
+
+
+
+# Created by https://www.toptal.com/developers/gitignore/api/java,gradle,forgegradle,groovy,maven,mavensmate,intellij
+# Edit at https://www.toptal.com/developers/gitignore?templates=java,gradle,forgegradle,groovy,maven,mavensmate,intellij
+
+### ForgeGradle ###
+# Minecraft client/server files
+run/
+
+### Groovy ###
+# .gitignore created from Groovy contributors in https://github.com/apache/groovy/blob/master/.gitignore
+
+user.gradle
+.gradle/
+target/
+build/
+out/
+
+*.DS_Store
+*.class
+*.swp
+*~
+
+.idea
+*.iml
+*.ipr
+*.iws
+.shelf
+
+.settings/
+.classpath
+.project
+bin/
