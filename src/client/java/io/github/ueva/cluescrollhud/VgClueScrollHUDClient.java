@@ -1,6 +1,7 @@
 package io.github.ueva.cluescrollhud;
 
 import io.github.ueva.cluescrollhud.hudelements.ClueScrollHudElement;
+import io.github.ueva.cluescrollhud.commands.CommandRegistrar;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -42,6 +43,10 @@ public class VgClueScrollHUDClient implements ClientModInitializer {
             }
         });
 
+        // Register commands.
+        LOGGER.info("Registering commands...");
+        CommandRegistrar.registerCommands();
+        LOGGER.info("...finished registering all commands.");
     }
 }
 
