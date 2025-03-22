@@ -27,10 +27,12 @@ public class GiveDebugClueScrollCommand {
                                     () -> Text.literal("Debug clue scroll added to your inventory."),
                                     false
                             );
-                        } else {
+                        }
+                        else {
                             source.sendError(Text.literal("Inventory full. Could not add the debug clue scroll."));
                         }
-                    } else {
+                    }
+                    else {
                         source.sendError(Text.literal("This command can only be executed by a player."));
                     }
                     return Command.SINGLE_SUCCESS;
