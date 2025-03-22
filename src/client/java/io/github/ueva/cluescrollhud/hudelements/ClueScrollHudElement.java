@@ -44,7 +44,7 @@ public class ClueScrollHudElement {
             TextRenderer textRenderer = client.textRenderer;
 
             // Count the number of clue scrolls in the player's inventory.
-            int clueScrollCount = getClueScrollCount();
+            int clueScrollCount = getClueScrollCount(client);
 
             // If there are no clue scrolls in the player's inventory, render the no clue scrolls message.
             if (clueScrollCount == 0) {
@@ -63,10 +63,16 @@ public class ClueScrollHudElement {
         LOGGER.info("Toggled visibility of ClueScrollHudElement to: " + isVisible);
     }
 
-    private static int getClueScrollCount() {
+    private static int getClueScrollCount(MinecraftClient client) {
         int clueScrollCount = 0;
 
-        PlayerInventory inventory = MinecraftClient.getInstance().player.getInventory();
+        // Ensure the client and the player are not null.
+        if (client == null || client.player == null) {
+            return clueScrollCount;
+        }
+
+        // Get the player's inventory.
+        PlayerInventory inventory = client.player.getInventory();
 
         // Loop through all the player's inventory slots.
         for (int i = 0; i < inventory.size(); i++) {
