@@ -34,6 +34,10 @@ public class DebugUtils {
         // Add basic information about the debug scroll.
         debugScrollData.putString("ClueScrolls.tier", "easy");
         debugScrollData.putString("ClueScrolls.version", "5.0.8");
+        debugScrollData.putString("ClueScrolls.uuid",
+                java.util.UUID.randomUUID()
+                        .toString()
+        );
 
         // Set the created time to the current time.
         debugScrollData.putInt("ClueScrolls.created", (int) (System.currentTimeMillis()));
