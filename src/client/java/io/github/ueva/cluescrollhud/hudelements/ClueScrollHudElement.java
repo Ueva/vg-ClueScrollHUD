@@ -63,6 +63,34 @@ public class ClueScrollHudElement {
         LOGGER.info("Toggled visibility of ClueScrollHudElement to: " + isVisible);
     }
 
+    public static void prev_scroll() {
+        int clueScrollCount = getClueScrollCount(MinecraftClient.getInstance());
+
+        // If there are no clue scrolls in the player's inventory, return.
+        if (clueScrollCount == 0) {
+            return;
+        }
+
+        // Decrement the selected clue scroll index, wrapping around to the last clue scroll if necessary.
+        selectedClueScrollIndex = (selectedClueScrollIndex - 1 + clueScrollCount) % clueScrollCount;
+
+        LOGGER.info("Selected previous clue scroll ({} of {}).", selectedClueScrollIndex, clueScrollCount);
+    }
+
+    public static void next_scroll() {
+        int clueScrollCount = getClueScrollCount(MinecraftClient.getInstance());
+
+        // If there are no clue scrolls in the player's inventory, return.
+        if (clueScrollCount == 0) {
+            return;
+        }
+
+        // Increment the selected clue scroll index, wrapping around to the first clue scroll if necessary.
+        selectedClueScrollIndex = (selectedClueScrollIndex + 1) % clueScrollCount;
+
+        LOGGER.info("Selected next clue scroll ({} of {}).", selectedClueScrollIndex, clueScrollCount);
+    }
+
     private static int getClueScrollCount(MinecraftClient client) {
         int clueScrollCount = 0;
 
@@ -121,5 +149,11 @@ public class ClueScrollHudElement {
         String clueScrollCountText = "Clue Scrolls: " + clueScrollCount;
         Text text = Text.literal(clueScrollCountText);
         context.drawTextWithShadow(textRenderer, text, PADDING + 5, PADDING + 5, 0xFFFFFF);
+
+        // Draw the selected clue scroll index.
+        String selectedClueScrollIndexText =
+                "Selected Clue Scroll: " + (selectedClueScrollIndex + 1) + " of " + clueScrollCount;
+        text = Text.literal(selectedClueScrollIndexText);
+        context.drawTextWithShadow(textRenderer, text, PADDING + 5, PADDING + 20 + textRenderer.fontHeight, 0xFFFFFF);
     }
 }

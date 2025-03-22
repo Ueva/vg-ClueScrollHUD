@@ -12,5 +12,8 @@ public class KeybindRegistrar {
     public static void registerKeybinds() {
         ToggleVisibilityKeybind.register();
         LOGGER.info("- Successfully registered ToggleVisibility Keybind.");
+
+        NextPrevScrollKeybind.register();
+        LOGGER.info("- Successfully registered PrevScroll and NextScroll Keybinds.");
     }
 }
