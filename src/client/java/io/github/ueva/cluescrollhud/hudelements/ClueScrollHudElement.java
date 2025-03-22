@@ -53,6 +53,14 @@ public class ClueScrollHudElement {
             }
             // Otherwise, render information about the selected clue scroll.
             else {
+                // Check that the selected clue scroll index is within bounds.
+                if (selectedClueScrollIndex >= clueScrollCount) {
+                    selectedClueScrollIndex = clueScrollCount - 1;
+                }
+                else if (selectedClueScrollIndex < 0) {
+                    selectedClueScrollIndex = 0;
+                }
+
                 render_clue_scroll(context, textRenderer, clueScrollCount);
             }
         }
