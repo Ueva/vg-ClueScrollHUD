@@ -41,10 +41,10 @@ public class DebugUtils {
         );
 
         // Set the created time to the current time.
-        debugScrollData.putInt("ClueScrolls.created", (int) (System.currentTimeMillis()));
+        debugScrollData.putLong("ClueScrolls.created", System.currentTimeMillis());
 
         // Set the time to complete to 60 minutes in the future.
-        debugScrollData.putInt("ClueScrolls.expire", (int) (System.currentTimeMillis()) + 60 * 60 * 1000);
+        debugScrollData.putLong("ClueScrolls.expire", System.currentTimeMillis() + 60 * 60 * 1000);
 
         // Add the first clue.
         debugScrollData.putString("ClueScrolls.clues.0.objective", "Ride a pig %amount% blocks");
