@@ -7,6 +7,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.player.PlayerInventory;
@@ -25,12 +26,17 @@ public class ClueScrollHudElement {
     public static final Identifier CLUESCROLL_HUD_LAYER = Identifier.of(VgClueScrollHUD.MOD_ID, "cluescroll_hud_layer");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VgClueScrollHUD.MOD_ID);
+
+
+    private static final int MARGIN = 5;
     private static final int PADDING = 10;
-    private static float scale = 0.25f;
+    private static final int SPACING = 5;
+    private static final float large_text_scale = 1.1f;
+    private static final float small_text_scale = 0.75f;
+    private static final float global_scale = 1.0f;
 
     private static boolean isVisible = true;
     private static int selectedClueScrollIndex = 0;
-
     private static ArrayList<ClueScroll> scrolls = new ArrayList<>();
 
     public static void render(DrawContext context, RenderTickCounter tickCounter) {
@@ -51,7 +57,6 @@ public class ClueScrollHudElement {
 
         // Render the ClueScrollHudElement if it's enabled, the HUD is visible, and the F3 debug screen is not visible.
         if (isVisible && !isDebugScreenVisible && !isHudHidden) {
-            // Obtain  and text renderer and matrix stack instances.
             TextRenderer textRenderer = client.textRenderer;
 
             // Count the number of clue scrolls in the player's inventory.
@@ -154,26 +159,94 @@ public class ClueScrollHudElement {
         int textHeight = textRenderer.fontHeight;
 
         // Render the background.
-        context.fill(PADDING, PADDING, PADDING + 5 + textWidth + 5, PADDING + 5 + textHeight + 5, 0, 0x7F000000);
+        context.fill(
+                MARGIN,
+                MARGIN,
+                MARGIN + PADDING + textWidth + PADDING,
+                MARGIN + PADDING + textHeight + PADDING,
+                0,
+                0x7F000000
+        );
 
         // Draw the "no cluescrolls" message.
-        context.drawTextWithShadow(textRenderer, text, PADDING + 5, PADDING + 5, 0xFFFFFF);
+        context.drawTextWithShadow(textRenderer, text, MARGIN + PADDING, MARGIN + PADDING, 0xFFFFFF);
     }
 
     private static void render_clue_scroll(DrawContext context, TextRenderer textRenderer, int clueScrollCount) {
-        // Render the background.
-        context.fill(PADDING, PADDING, 150, 210, 0, 0x7F000000);
-
-        // Draw the number of clue scrolls in the player's inventory.
-        String clueScrollCountText = "Clue Scrolls: " + clueScrollCount;
-        Text text = Text.literal(clueScrollCountText);
-        context.drawTextWithShadow(textRenderer, text, PADDING + 5, PADDING + 5, 0xFFFFFF);
 
         // Draw the selected clue scroll index.
-        String selectedClueScrollIndexText =
-                "Selected Clue Scroll: " + (selectedClueScrollIndex + 1) + " of " + clueScrollCount;
-        text = Text.literal(selectedClueScrollIndexText);
-        context.drawTextWithShadow(textRenderer, text, PADDING + 5, PADDING + 20 + textRenderer.fontHeight, 0xFFFFFF);
+        MatrixStack matrices = context.getMatrices();
+        matrices.push();
+        matrices.scale(small_text_scale, small_text_scale, 1.0f);
+
+        String selectedClueScrollIndexText = "Scroll " + (selectedClueScrollIndex + 1) + " of " + clueScrollCount;
+        Text text = Text.literal(selectedClueScrollIndexText);
+        context.drawTextWithShadow(
+                textRenderer,
+                text,
+                (int) ((MARGIN + PADDING) / small_text_scale),
+                (int) ((MARGIN + PADDING) / small_text_scale),
+                0xFFFFFF
+        );
+        matrices.pop();
+
+        ClueScroll scroll = scrolls.get(selectedClueScrollIndex);
+
+        // Draw the clue scroll's tier.
+        matrices.push();
+        matrices.scale(large_text_scale, large_text_scale, 1.0f);
+        String clueScrollTier = scroll.getTier()
+                .substring(0, 1)
+                .toUpperCase() + scroll.getTier()
+                .substring(1) + " Clue Scroll";
+        text = Text.literal(clueScrollTier);
+        context.drawTextWithShadow(
+                textRenderer,
+                text,
+                (int) ((MARGIN + PADDING) / large_text_scale),
+                (int) ((MARGIN + PADDING + (int) (textRenderer.fontHeight * small_text_scale) + SPACING) / large_text_scale),
+                0xFFFFFF
+        );
+        matrices.pop();
+
+        // Draw the clue scroll's clues.
+        int maxTextWidth = 0;
+        int baseClueY =
+                MARGIN + PADDING + (int) (textRenderer.fontHeight * small_text_scale) + SPACING + (int) (textRenderer.fontHeight * large_text_scale) + SPACING;
+        for (int i = 0; i < scroll.getClueCount(); i++) {
+            ClueTask clue = scroll.getClues()
+                    .get(i);
+
+            String clueText = clue.getFormattedObjective() + ".";
+            text = Text.literal(clueText);
+            int clueHeight = baseClueY + i * (textRenderer.fontHeight * 2 + SPACING);
+            context.drawTextWithShadow(textRenderer, text, MARGIN + PADDING, clueHeight, 0xFFFFFF);
+            maxTextWidth = Math.max(maxTextWidth, textRenderer.getWidth(text));
+
+            // Draw the clue's progress.
+            int clueProgressHeight = baseClueY + i * (textRenderer.fontHeight * 2 + SPACING) + textRenderer.fontHeight;
+            if (clue.isCompleted()) {
+                String completionText = "Completed!";
+                text = Text.literal(completionText);
+                maxTextWidth = Math.max(maxTextWidth, textRenderer.getWidth(text));
+                context.drawTextWithShadow(textRenderer, text, MARGIN + PADDING, clueProgressHeight, 0x55FF55);
+            }
+            else {
+                String progressText =
+                        "Progress: " + clue.getCompleted() + "/" + clue.getAmount() + " (" + clue.getPercentCompleted() + "%)";
+                text = Text.literal(progressText);
+                context.drawTextWithShadow(textRenderer, text, MARGIN + PADDING, clueProgressHeight, 0xFFAA00);
+            }
+            maxTextWidth = Math.max(maxTextWidth, textRenderer.getWidth(text));
+        }
+
+        // Render the background.
+        int backgroundWidth = MARGIN + PADDING + maxTextWidth + PADDING;
+        int backgroundHeight =
+                MARGIN + PADDING + (int) (textRenderer.fontHeight * small_text_scale) + SPACING + (int) (textRenderer.fontHeight * large_text_scale) + SPACING + (int) (textRenderer.fontHeight * scroll.getClueCount() * 2 + SPACING) + PADDING;
+
+        context.fill(MARGIN, MARGIN, backgroundWidth, backgroundHeight, 0, 0x7F000000);
+
     }
 
     private static void updateScrollList(MinecraftClient client) {
@@ -198,7 +271,7 @@ public class ClueScrollHudElement {
 
                 // If the custom data component is not null.
                 if (customData != null) {
-                    
+
                     // Extract the NBT data from the custom data component.
                     NbtCompound scrollData = customData.copyNbt();
 
