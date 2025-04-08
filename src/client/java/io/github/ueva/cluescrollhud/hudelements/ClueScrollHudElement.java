@@ -3,6 +3,7 @@ package io.github.ueva.cluescrollhud.hudelements;
 import io.github.ueva.cluescrollhud.VgClueScrollHUD;
 import io.github.ueva.cluescrollhud.models.ClueScroll;
 import io.github.ueva.cluescrollhud.models.ClueTask;
+import io.github.ueva.cluescrollhud.utils.DateTimeUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -240,10 +241,40 @@ public class ClueScrollHudElement {
             maxTextWidth = Math.max(maxTextWidth, textRenderer.getWidth(text));
         }
 
+        // Draw how long until the clue scroll expires.
+        matrices.push();
+        matrices.scale(small_text_scale, small_text_scale, 1.0f);
+        long timeLeft = scroll.getExpire() - System.currentTimeMillis();
+        String timeLeftText = "Expires in " + DateTimeUtils.formatDuration(timeLeft);
+        text = Text.literal(timeLeftText);
+
+        // If there's less than one hour left, change the color to red.
+        if (timeLeft < 60 * 60 * 1000) {
+            context.drawTextWithShadow(
+                    textRenderer,
+                    text,
+                    (int) ((MARGIN + PADDING) / small_text_scale),
+                    (int) ((baseClueY + scroll.getClueCount() * (textRenderer.fontHeight * 2 + SPACING)) / small_text_scale),
+                    0xFF5555
+            );
+        }
+        // Otherwise, draw it in light grey.
+        else {
+            context.drawTextWithShadow(
+                    textRenderer,
+                    text,
+                    (int) ((MARGIN + PADDING) / small_text_scale),
+                    (int) ((baseClueY + scroll.getClueCount() * (textRenderer.fontHeight * 2 + SPACING)) / small_text_scale),
+                    0xAAAAAA
+            );
+        }
+        matrices.pop();
+
+
         // Render the background.
         int backgroundWidth = MARGIN + PADDING + maxTextWidth + PADDING;
         int backgroundHeight =
-                MARGIN + PADDING + (int) (textRenderer.fontHeight * small_text_scale) + SPACING + (int) (textRenderer.fontHeight * large_text_scale) + SPACING + (int) (textRenderer.fontHeight * scroll.getClueCount() * 2 + SPACING) + PADDING;
+                MARGIN + PADDING + (int) (textRenderer.fontHeight * small_text_scale) + SPACING + (int) (textRenderer.fontHeight * large_text_scale) + SPACING + (int) (textRenderer.fontHeight * scroll.getClueCount() * 2 + SPACING) + (int) (textRenderer.fontHeight * small_text_scale) + SPACING + PADDING;
 
         context.fill(MARGIN, MARGIN, backgroundWidth, backgroundHeight, 0, 0x7F000000);
 
