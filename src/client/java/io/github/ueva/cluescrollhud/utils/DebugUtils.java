@@ -49,12 +49,20 @@ public class DebugUtils {
         // Add the first clue.
         debugScrollData.putString("ClueScrolls.clues.0.objective", "Ride a pig %amount% blocks");
 
-        int amount = random.nextInt(5000) + 1;
-        debugScrollData.putFloat("ClueScrolls.clues.0.amount", (float) amount);
+        int amount_1 = random.nextInt(5000) + 1;
+        debugScrollData.putFloat("ClueScrolls.clues.0.amount", (float) amount_1);
 
-        // Randomly choose a number between 0 and amount.
-        int completed = random.nextInt(amount);
-        debugScrollData.putFloat("ClueScrolls.clues.0.completed", (float) completed);
+        int completed_1 = random.nextInt(amount_1);
+        debugScrollData.putFloat("ClueScrolls.clues.0.completed", (float) completed_1);
+
+        // Add the second clue.
+        debugScrollData.putString("ClueScrolls.clues.1.objective", "Mine %amount% coal ore");
+
+        int amount_2 = random.nextInt(250) + 1;
+        debugScrollData.putFloat("ClueScrolls.clues.1.amount", (float) amount_2);
+
+        int completed_2 = random.nextInt(amount_2);
+        debugScrollData.putFloat("ClueScrolls.clues.1.completed", (float) completed_2);
 
         return NbtComponent.of(debugScrollData);
     }
