@@ -35,10 +35,9 @@ public class ClueScrollHudElement {
     private static final float large_text_scale = 1.1f;
     private static final float small_text_scale = 0.75f;
     private static final float global_scale = 1.0f;
-
+    private static final ArrayList<ClueScroll> scrolls = new ArrayList<>();
     private static boolean isVisible = true;
     private static int selectedClueScrollIndex = 0;
-    private static ArrayList<ClueScroll> scrolls = new ArrayList<>();
 
     public static void render(DrawContext context, RenderTickCounter tickCounter) {
 
@@ -316,6 +315,10 @@ public class ClueScrollHudElement {
                         if (!isClueScrollInList(uuid)) {
                             addClueScrollToList(scrollData);
                         }
+                        // Otherwise, update the existing scroll's completion amount.
+                        else {
+                            updateScroll(uuid, scrollData);
+                        }
                     }
                 }
             }
@@ -341,6 +344,28 @@ public class ClueScrollHudElement {
             }
         }
         return false;
+    }
+
+    private static void updateScroll(String uuid, NbtCompound scroll_data) {
+        // Get the scroll with the given UUID from the list.
+        ClueScroll scroll = null;
+        for (ClueScroll s : scrolls) {
+            if (s.getUuid()
+                    .equals(uuid)) {
+                scroll = s;
+                break;
+            }
+        }
+
+        // Update the scroll's completion amount.
+        if (scroll != null) {
+            for (int i = 0; i < scroll.getClueCount(); i++) {
+                ClueTask clue = scroll.getClues()
+                        .get(i);
+                int completed = (int) scroll_data.getFloat("ClueScrolls.clues." + i + ".completed");
+                clue.setCompleted(completed);
+            }
+        }
     }
 
     private static void addClueScrollToList(NbtCompound scroll_data) {
