@@ -64,6 +64,33 @@ public class DebugUtils {
         int completed_2 = random.nextInt(amount_2);
         debugScrollData.putFloat("ClueScrolls.clues.1.completed", (float) completed_2);
 
+        // Add the third clue.
+        debugScrollData.putString("ClueScrolls.clues.2.objective", "Catch %amount% fish");
+
+        int amount_3 = random.nextInt(50) + 1;
+        debugScrollData.putFloat("ClueScrolls.clues.2.amount", (float) amount_3);
+
+        int completed_3 = random.nextInt(amount_3);
+        debugScrollData.putFloat("ClueScrolls.clues.2.completed", (float) completed_3);
+
+        // Add the fourth clue.
+        debugScrollData.putString("ClueScrolls.clues.3.objective", "Chop %amount% oak logs");
+
+        int amount_4 = random.nextInt(100) + 1;
+        debugScrollData.putFloat("ClueScrolls.clues.3.amount", (float) amount_4);
+
+        int completed_4 = random.nextInt(amount_4);
+        debugScrollData.putFloat("ClueScrolls.clues.3.completed", (float) completed_4);
+
+        // Add the fifth clue.
+        debugScrollData.putString("ClueScrolls.clues.4.objective", "Kill %amount% zombies");
+
+        int amount_5 = random.nextInt(75) + 1;
+        debugScrollData.putFloat("ClueScrolls.clues.4.amount", (float) amount_5);
+
+        int completed_5 = random.nextInt(amount_5);
+        debugScrollData.putFloat("ClueScrolls.clues.4.completed", (float) completed_5);
+
         return NbtComponent.of(debugScrollData);
     }
 }
