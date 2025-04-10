@@ -8,6 +8,11 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.random.LocalRandom;
 import net.minecraft.util.math.random.RandomSeed;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
 
 public class DebugUtils {
 
@@ -26,71 +31,72 @@ public class DebugUtils {
     }
 
     private static NbtComponent getDebugScrollDataComponent() {
-        // Create a random number generator for randomising parts of the debug clue.
         LocalRandom random = new LocalRandom(RandomSeed.getSeed());
 
-        NbtCompound debugScrollData = new NbtCompound();
-
-        // Add basic information about the debug scroll.
-        debugScrollData.putString("ClueScrolls.tier", "easy");
-        debugScrollData.putString("ClueScrolls.version", "5.0.8");
-        debugScrollData.putString(
-                "ClueScrolls.uuid",
-                java.util.UUID.randomUUID()
-                        .toString()
+        List<String> objectives = List.of(
+                "Ride a pig %amount% blocks",
+                "Mine %amount% coal ore",
+                "Catch %amount% fish",
+                "Chop %amount% oak logs",
+                "Kill %amount% zombies",
+                "Craft %amount% oak planks",
+                "Eat %amount% cookies",
+                "Place %amount% torches",
+                "Walk %amount% blocks"
         );
 
-        // Set the created time to the current time.
-        debugScrollData.putLong("ClueScrolls.created", System.currentTimeMillis());
+        int clueCount = random.nextBetweenExclusive(2, 10); // 2–9
+        Set<Integer> selectedIndices = new HashSet<>();
+        while (selectedIndices.size() < clueCount) {
+            int index = random.nextInt(objectives.size());
+            selectedIndices.add(index);
+        }
 
-        // Set the time to complete to 60 minutes in the future.
-        debugScrollData.putLong("ClueScrolls.expire", System.currentTimeMillis() + 60 * 60 * 1000);
+        List<String> selectedObjectives = selectedIndices.stream()
+                .map(objectives::get)
+                .toList();
 
-        // Add the first clue.
-        debugScrollData.putString("ClueScrolls.clues.0.objective", "Ride a pig %amount% blocks");
+        // Assign tier based on clue count
+        String tier = switch (clueCount) {
+            case 2, 3 -> "easy";
+            case 4, 5 -> "normal";
+            case 6, 7 -> "hard";
+            default -> "weekly";
+        };
 
-        int amount_1 = random.nextInt(5000) + 1;
-        debugScrollData.putFloat("ClueScrolls.clues.0.amount", (float) amount_1);
+        NbtCompound data = new NbtCompound();
 
-        int completed_1 = random.nextInt(amount_1);
-        debugScrollData.putFloat("ClueScrolls.clues.0.completed", (float) completed_1);
+        // Set scroll metadata.
+        data.putString("ClueScrolls.tier", tier);
+        data.putString("ClueScrolls.version", "5.0.8");
+        data.putString(
+                "ClueScrolls.uuid",
+                UUID.randomUUID()
+                        .toString()
+        );
+        data.putLong("ClueScrolls.created", System.currentTimeMillis());
+        data.putLong("ClueScrolls.expire", System.currentTimeMillis() + 60 * 60 * 1000);
 
-        // Add the second clue.
-        debugScrollData.putString("ClueScrolls.clues.1.objective", "Mine %amount% coal ore");
+        // Set objective, amount, and completed for each clue.
+        int i = 0;
+        for (String objective : selectedObjectives) {
+            int maxAmount = switch (i % 4) {
+                case 0 -> 5000;
+                case 1 -> 250;
+                case 2 -> 100;
+                default -> 50;
+            };
 
-        int amount_2 = random.nextInt(250) + 1;
-        debugScrollData.putFloat("ClueScrolls.clues.1.amount", (float) amount_2);
+            int amount = random.nextInt(maxAmount) + 1;
+            int completed = random.nextInt(amount);
 
-        int completed_2 = random.nextInt(amount_2);
-        debugScrollData.putFloat("ClueScrolls.clues.1.completed", (float) completed_2);
+            data.putString("ClueScrolls.clues." + i + ".objective", objective);
+            data.putFloat("ClueScrolls.clues." + i + ".amount", (float) amount);
+            data.putFloat("ClueScrolls.clues." + i + ".completed", (float) completed);
+            i++;
+        }
 
-        // Add the third clue.
-        debugScrollData.putString("ClueScrolls.clues.2.objective", "Catch %amount% fish");
-
-        int amount_3 = random.nextInt(50) + 1;
-        debugScrollData.putFloat("ClueScrolls.clues.2.amount", (float) amount_3);
-
-        int completed_3 = random.nextInt(amount_3);
-        debugScrollData.putFloat("ClueScrolls.clues.2.completed", (float) completed_3);
-
-        // Add the fourth clue.
-        debugScrollData.putString("ClueScrolls.clues.3.objective", "Chop %amount% oak logs");
-
-        int amount_4 = random.nextInt(100) + 1;
-        debugScrollData.putFloat("ClueScrolls.clues.3.amount", (float) amount_4);
-
-        int completed_4 = random.nextInt(amount_4);
-        debugScrollData.putFloat("ClueScrolls.clues.3.completed", (float) completed_4);
-
-        // Add the fifth clue.
-        debugScrollData.putString("ClueScrolls.clues.4.objective", "Kill %amount% zombies");
-
-        int amount_5 = random.nextInt(75) + 1;
-        debugScrollData.putFloat("ClueScrolls.clues.4.amount", (float) amount_5);
-
-        int completed_5 = random.nextInt(amount_5);
-        debugScrollData.putFloat("ClueScrolls.clues.4.completed", (float) completed_5);
-
-        return NbtComponent.of(debugScrollData);
+        return NbtComponent.of(data);
     }
+
 }
