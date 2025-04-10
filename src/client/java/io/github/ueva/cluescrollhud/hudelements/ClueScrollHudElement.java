@@ -4,6 +4,7 @@ import io.github.ueva.cluescrollhud.VgClueScrollHUD;
 import io.github.ueva.cluescrollhud.models.ClueScroll;
 import io.github.ueva.cluescrollhud.models.ClueTask;
 import io.github.ueva.cluescrollhud.utils.DateTimeUtils;
+import io.github.ueva.cluescrollhud.utils.TierColourUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -209,7 +210,7 @@ public class ClueScrollHudElement {
         text = Text.literal(tierName);
         scaledX = (int) (contentLeft / large_text_scale);
         scaledY = (int) (cursorY / large_text_scale);
-        context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, 0xFFFFFF);
+        context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, TierColourUtils.getColour(scroll.getTier()));
         maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * large_text_scale));
         matrices.pop();
 
