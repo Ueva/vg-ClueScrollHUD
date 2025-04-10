@@ -253,7 +253,7 @@ public class ClueScrollHudElement {
         String timeLeftText = "Expires in " + DateTimeUtils.formatDuration(timeLeft);
         text = Text.literal(timeLeftText);
 
-        int color = timeLeft < 60 * 60 * 1000 ? 0xFF5555 : 0xAAAAAA;
+        int color = timeLeft < 60 * 60 * 1000 ? 0xAA0000 : 0xAAAAAA; // Red if less than 1 hour, grey otherwise.
         scaledX = (int) (contentLeft / small_text_scale);
         scaledY = (int) (cursorY / small_text_scale);
         context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, color);
