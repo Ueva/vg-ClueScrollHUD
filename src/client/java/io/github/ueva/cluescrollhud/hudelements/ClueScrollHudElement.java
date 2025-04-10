@@ -173,111 +173,98 @@ public class ClueScrollHudElement {
     }
 
     private static void render_clue_scroll(DrawContext context, TextRenderer textRenderer, int clueScrollCount) {
-
-        // Draw the selected clue scroll index.
         MatrixStack matrices = context.getMatrices();
+
+        ClueScroll scroll = scrolls.get(selectedClueScrollIndex);
+        int clueCount = scroll.getClueCount();
+        int maxTextWidth = 0;
+        int cursorY = MARGIN + PADDING;
+
+        // Track where the top-left of the content begins
+        int contentLeft = MARGIN + PADDING;
+
+        // ─── Draw "Scroll X of Y" ──────────────────────────────────────────────
         matrices.push();
         matrices.scale(small_text_scale, small_text_scale, 1.0f);
 
-        String selectedClueScrollIndexText = "Scroll " + (selectedClueScrollIndex + 1) + " of " + clueScrollCount;
-        Text text = Text.literal(selectedClueScrollIndexText);
-        context.drawTextWithShadow(
-                textRenderer,
-                text,
-                (int) ((MARGIN + PADDING) / small_text_scale),
-                (int) ((MARGIN + PADDING) / small_text_scale),
-                0xFFFFFF
-        );
+        String scrollIndexText = "Scroll " + (selectedClueScrollIndex + 1) + " of " + clueScrollCount;
+        Text text = Text.literal(scrollIndexText);
+        int scaledX = (int) (contentLeft / small_text_scale);
+        int scaledY = (int) (cursorY / small_text_scale);
+        context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, 0xFFFFFF);
+        maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * small_text_scale));
         matrices.pop();
 
-        ClueScroll scroll = scrolls.get(selectedClueScrollIndex);
+        cursorY += (int) (textRenderer.fontHeight * small_text_scale) + SPACING;
 
-        // Draw the clue scroll's tier.
+        // ─── Draw "<Tier> Clue Scroll" ────────────────────────────────────────
         matrices.push();
         matrices.scale(large_text_scale, large_text_scale, 1.0f);
-        String clueScrollTier = scroll.getTier()
+
+        String tierName = scroll.getTier()
                 .substring(0, 1)
                 .toUpperCase() + scroll.getTier()
                 .substring(1) + " Clue Scroll";
-        text = Text.literal(clueScrollTier);
-        context.drawTextWithShadow(
-                textRenderer,
-                text,
-                (int) ((MARGIN + PADDING) / large_text_scale),
-                (int) ((MARGIN + PADDING + (int) (textRenderer.fontHeight * small_text_scale) + SPACING) / large_text_scale),
-                0xFFFFFF
-        );
+        text = Text.literal(tierName);
+        scaledX = (int) (contentLeft / large_text_scale);
+        scaledY = (int) (cursorY / large_text_scale);
+        context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, 0xFFFFFF);
+        maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * large_text_scale));
         matrices.pop();
 
-        // Draw the clue scroll's clues.
-        int maxTextWidth = 0;
-        int baseClueY =
-                MARGIN + PADDING + (int) (textRenderer.fontHeight * small_text_scale) + SPACING + (int) (textRenderer.fontHeight * large_text_scale) + SPACING;
-        for (int i = 0; i < scroll.getClueCount(); i++) {
+        cursorY += (int) (textRenderer.fontHeight * large_text_scale) + SPACING;
+
+        // ─── Draw clues ────────────────────────────────────────────────────────
+        for (int i = 0; i < clueCount; i++) {
             ClueTask clue = scroll.getClues()
                     .get(i);
 
-            String clueText = clue.getFormattedObjective() + ".";
-            text = Text.literal(clueText);
-            int clueHeight = baseClueY + i * (textRenderer.fontHeight * 2 + SPACING);
-            context.drawTextWithShadow(textRenderer, text, MARGIN + PADDING, clueHeight, 0xFFFFFF);
+            // Objective
+            text = Text.literal(clue.getFormattedObjective() + ".");
+            context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, 0xFFFFFF);
             maxTextWidth = Math.max(maxTextWidth, textRenderer.getWidth(text));
+            cursorY += textRenderer.fontHeight;
 
-            // Draw the clue's progress.
-            int clueProgressHeight = baseClueY + i * (textRenderer.fontHeight * 2 + SPACING) + textRenderer.fontHeight;
+            // Progress
             if (clue.isCompleted()) {
-                String completionText = "Completed!";
-                text = Text.literal(completionText);
-                maxTextWidth = Math.max(maxTextWidth, textRenderer.getWidth(text));
-                context.drawTextWithShadow(textRenderer, text, MARGIN + PADDING, clueProgressHeight, 0x55FF55);
+                text = Text.literal("Completed!");
+                context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, 0x55FF55);
             }
             else {
-                String progressText =
+                String progress =
                         "Progress: " + clue.getCompleted() + "/" + clue.getAmount() + " (" + clue.getPercentCompleted() + "%)";
-                text = Text.literal(progressText);
-                context.drawTextWithShadow(textRenderer, text, MARGIN + PADDING, clueProgressHeight, 0xFFAA00);
+                text = Text.literal(progress);
+                context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, 0xFFAA00);
             }
             maxTextWidth = Math.max(maxTextWidth, textRenderer.getWidth(text));
+            cursorY += textRenderer.fontHeight + SPACING;
         }
 
-        // Draw how long until the clue scroll expires.
+        // ─── Draw expiration ───────────────────────────────────────────────────
         matrices.push();
         matrices.scale(small_text_scale, small_text_scale, 1.0f);
+
         long timeLeft = scroll.getExpire() - System.currentTimeMillis();
         String timeLeftText = "Expires in " + DateTimeUtils.formatDuration(timeLeft);
         text = Text.literal(timeLeftText);
 
-        // If there's less than one hour left, change the color to red.
-        if (timeLeft < 60 * 60 * 1000) {
-            context.drawTextWithShadow(
-                    textRenderer,
-                    text,
-                    (int) ((MARGIN + PADDING) / small_text_scale),
-                    (int) ((baseClueY + scroll.getClueCount() * (textRenderer.fontHeight * 2 + SPACING)) / small_text_scale),
-                    0xFF5555
-            );
-        }
-        // Otherwise, draw it in light grey.
-        else {
-            context.drawTextWithShadow(
-                    textRenderer,
-                    text,
-                    (int) ((MARGIN + PADDING) / small_text_scale),
-                    (int) ((baseClueY + scroll.getClueCount() * (textRenderer.fontHeight * 2 + SPACING)) / small_text_scale),
-                    0xAAAAAA
-            );
-        }
+        int color = timeLeft < 60 * 60 * 1000 ? 0xFF5555 : 0xAAAAAA;
+        scaledX = (int) (contentLeft / small_text_scale);
+        scaledY = (int) (cursorY / small_text_scale);
+        context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, color);
+        maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * small_text_scale));
+
         matrices.pop();
 
+        cursorY += (int) (textRenderer.fontHeight * small_text_scale);
 
-        // Render the background.
-        int backgroundWidth = MARGIN + PADDING + maxTextWidth + PADDING;
-        int backgroundHeight =
-                MARGIN + PADDING + (int) (textRenderer.fontHeight * small_text_scale) + SPACING + (int) (textRenderer.fontHeight * large_text_scale) + SPACING + (int) (textRenderer.fontHeight * scroll.getClueCount() * 2 + SPACING) + (int) (textRenderer.fontHeight * small_text_scale) + SPACING + PADDING;
+        // ─── Draw Background ──────────────────────────────────────────────
+        int backgroundRight = contentLeft + maxTextWidth + PADDING;
+        int backgroundBottom = cursorY + PADDING;
 
-        context.fill(MARGIN, MARGIN, backgroundWidth, backgroundHeight, 0, 0x7F000000);
-
+        context.fill(MARGIN, MARGIN, backgroundRight, backgroundBottom, 0x7F000000);
     }
+
 
     private static void updateScrollList(MinecraftClient client) {
 
