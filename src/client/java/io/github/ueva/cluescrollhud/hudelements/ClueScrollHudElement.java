@@ -16,6 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.ColorHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -234,7 +235,11 @@ public class ClueScrollHudElement {
                 String progress =
                         "Progress: " + clue.getCompleted() + "/" + clue.getAmount() + " (" + clue.getPercentCompleted() + "%)";
                 text = Text.literal(progress);
-                context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, 0xFFAA00);
+
+                // Lerp progress colour between red (0xFF5555) and green (0x55FF55)
+                int progressColour = ColorHelper.lerp((float) clue.getPercentCompleted() / 100.0f, 0xFF5555, 0x55FF55);
+
+                context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, progressColour);
             }
             maxTextWidth = Math.max(maxTextWidth, textRenderer.getWidth(text));
             cursorY += textRenderer.fontHeight + SPACING;
