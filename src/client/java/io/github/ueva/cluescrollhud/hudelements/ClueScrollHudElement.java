@@ -50,6 +50,7 @@ public class ClueScrollHudElement {
         MatrixStack matrices = context.getMatrices();
         matrices.push();
         matrices.scale(config.globalScale, config.globalScale, 1.0f);
+        matrices.translate(config.x, config.y, 0.0f);
 
         // Check whether the F3 debug screen is visible.
         boolean isDebugScreenVisible = MinecraftClient.getInstance()
@@ -158,6 +159,10 @@ public class ClueScrollHudElement {
     }
 
     private static void render_no_clue_scrolls(DrawContext context, TextRenderer textRenderer) {
+
+        if (config.hideWhenNoClue) {
+            return;
+        }
 
         String noClueScrollsText = "No clue scrolls in inventory :(";
         Text text = Text.literal(noClueScrollsText);
