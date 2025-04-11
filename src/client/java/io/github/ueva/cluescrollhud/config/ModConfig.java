@@ -34,6 +34,6 @@ public class ModConfig implements ConfigData {
 
     // Whether to colour based on clue progress, and fallback colour.
     public boolean colourByProgress = true;
-    public int fallbackClueColour = 0xFFAA00;
+    // public int fallbackClueColour = 0xFFAA00;
 
 }

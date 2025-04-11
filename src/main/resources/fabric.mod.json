@@ -20,6 +20,9 @@
     ],
     "client": [
       "io.github.ueva.cluescrollhud.VgClueScrollHUDClient"
+    ],
+    "modmenu": [
+      "io.github.ueva.cluescrollhud.config.ModMenuIntegration"
     ]
   },
   "mixins": [
