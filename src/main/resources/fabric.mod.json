@@ -5,13 +5,13 @@
   "name": "vg ClueScrollHUD",
   "description": "This is an example description! Tell everyone what your mod is about!",
   "authors": [
-    "Me!"
+    "Ueva"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://github.com/Ueva/vg-ClueScrollHUD",
+    "sources": "https://github.com/Ueva/vg-ClueScrollHUD"
   },
-  "license": "CC0-1.0",
+  "license": "MIT License",
   "icon": "assets/vg-cluescrollhud/icon.png",
   "environment": "*",
   "entrypoints": {
@@ -36,9 +36,10 @@
     "fabricloader": ">=0.16.10",
     "minecraft": "~1.21.4",
     "java": ">=21",
-    "fabric-api": "*"
+    "fabric-api": "*",
+    "cloth-config": "~17.0.144"
   },
-  "suggests": {
-    "another-mod": "*"
+  "recommends": {
+    "modmenu": "~13.0.2"
   }
 }
