@@ -251,10 +251,17 @@ public class ClueScrollHudElement {
                         "Progress: " + clue.getCompleted() + "/" + clue.getAmount() + " (" + clue.getPercentCompleted() + "%)";
                 text = Text.literal(progress);
 
-                // Lerp progress colour between red (0xFF5555) and green (0x55FF55)
-                int progressColour = ColorHelper.lerp((float) clue.getPercentCompleted() / 100.0f, 0xFF5555, 0x55FF55);
+                if (config.colourByProgress) {
+                    // Lerp progress colour between red (0xFF5555) and green (0x55FF55)
+                    int progressColour =
+                            ColorHelper.lerp((float) clue.getPercentCompleted() / 100.0f, 0xFF5555, 0x55FF55);
+                    context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, progressColour);
+                }
+                else {
+                    context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, 0xFFAA00);
+                }
 
-                context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, progressColour);
+
             }
             maxTextWidth = Math.max(maxTextWidth, textRenderer.getWidth(text));
             cursorY += textRenderer.fontHeight + SPACING;
