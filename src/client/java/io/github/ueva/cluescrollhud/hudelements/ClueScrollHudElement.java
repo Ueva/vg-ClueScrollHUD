@@ -40,11 +40,16 @@ public class ClueScrollHudElement {
     private static final ArrayList<ClueScroll> scrolls = new ArrayList<>();
     private static boolean isVisible = true;
     private static int selectedClueScrollIndex = 0;
+    private static int updateScrollInterval = 100;
 
     public static void render(DrawContext context, RenderTickCounter tickCounter) {
 
         // Obtain the client instance.
         MinecraftClient client = MinecraftClient.getInstance();
+
+        MatrixStack matrices = context.getMatrices();
+        matrices.push();
+        matrices.scale(global_scale, global_scale, 1.0f);
 
         // Check whether the F3 debug screen is visible.
         boolean isDebugScreenVisible = MinecraftClient.getInstance()
@@ -82,6 +87,7 @@ public class ClueScrollHudElement {
                 render_clue_scroll(context, textRenderer, clueScrollCount);
             }
         }
+        matrices.pop();
     }
 
     public static void toggleVisibility() {
