@@ -1,10 +1,12 @@
 package io.github.ueva.cluescrollhud.hudelements;
 
 import io.github.ueva.cluescrollhud.VgClueScrollHUD;
+import io.github.ueva.cluescrollhud.config.ModConfig;
 import io.github.ueva.cluescrollhud.models.ClueScroll;
 import io.github.ueva.cluescrollhud.models.ClueTask;
 import io.github.ueva.cluescrollhud.utils.DateTimeUtils;
 import io.github.ueva.cluescrollhud.utils.TierColourUtils;
+import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -29,18 +31,16 @@ public class ClueScrollHudElement {
     public static final Identifier CLUESCROLL_HUD_LAYER = Identifier.of(VgClueScrollHUD.MOD_ID, "cluescroll_hud_layer");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VgClueScrollHUD.MOD_ID);
-
-
     private static final int MARGIN = 5;
     private static final int PADDING = 10;
     private static final int SPACING = 5;
-    private static final float large_text_scale = 1.1f;
-    private static final float small_text_scale = 0.75f;
-    private static final float global_scale = 1.0f;
+
     private static final ArrayList<ClueScroll> scrolls = new ArrayList<>();
+    private static final ModConfig config = AutoConfig.getConfigHolder(ModConfig.class)
+            .getConfig();
+
     private static boolean isVisible = true;
     private static int selectedClueScrollIndex = 0;
-    private static int updateScrollInterval = 100;
 
     public static void render(DrawContext context, RenderTickCounter tickCounter) {
 
@@ -49,7 +49,7 @@ public class ClueScrollHudElement {
 
         MatrixStack matrices = context.getMatrices();
         matrices.push();
-        matrices.scale(global_scale, global_scale, 1.0f);
+        matrices.scale(config.globalScale, config.globalScale, 1.0f);
 
         // Check whether the F3 debug screen is visible.
         boolean isDebugScreenVisible = MinecraftClient.getInstance()
@@ -183,6 +183,9 @@ public class ClueScrollHudElement {
     private static void render_clue_scroll(DrawContext context, TextRenderer textRenderer, int clueScrollCount) {
         MatrixStack matrices = context.getMatrices();
 
+        float largeTextScale = config.largeTextScale;
+        float smallTextScale = config.smallTextScale;
+
         ClueScroll scroll = scrolls.get(selectedClueScrollIndex);
         int clueCount = scroll.getClueCount();
         int maxTextWidth = 0;
@@ -193,34 +196,34 @@ public class ClueScrollHudElement {
 
         // ─── Draw "Scroll X of Y" ──────────────────────────────────────────────
         matrices.push();
-        matrices.scale(small_text_scale, small_text_scale, 1.0f);
+        matrices.scale(smallTextScale, smallTextScale, 1.0f);
 
         String scrollIndexText = "Scroll " + (selectedClueScrollIndex + 1) + " of " + clueScrollCount;
         Text text = Text.literal(scrollIndexText);
-        int scaledX = (int) (contentLeft / small_text_scale);
-        int scaledY = (int) (cursorY / small_text_scale);
+        int scaledX = (int) (contentLeft / smallTextScale);
+        int scaledY = (int) (cursorY / smallTextScale);
         context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, 0xFFFFFF);
-        maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * small_text_scale));
+        maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * smallTextScale));
         matrices.pop();
 
-        cursorY += (int) (textRenderer.fontHeight * small_text_scale) + SPACING;
+        cursorY += (int) (textRenderer.fontHeight * smallTextScale) + SPACING;
 
         // ─── Draw "<Tier> Clue Scroll" ────────────────────────────────────────
         matrices.push();
-        matrices.scale(large_text_scale, large_text_scale, 1.0f);
+        matrices.scale(largeTextScale, largeTextScale, 1.0f);
 
         String tierName = scroll.getTier()
                 .substring(0, 1)
                 .toUpperCase() + scroll.getTier()
                 .substring(1) + " Clue Scroll";
         text = Text.literal(tierName);
-        scaledX = (int) (contentLeft / large_text_scale);
-        scaledY = (int) (cursorY / large_text_scale);
+        scaledX = (int) (contentLeft / largeTextScale);
+        scaledY = (int) (cursorY / largeTextScale);
         context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, TierColourUtils.getColour(scroll.getTier()));
-        maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * large_text_scale));
+        maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * largeTextScale));
         matrices.pop();
 
-        cursorY += (int) (textRenderer.fontHeight * large_text_scale) + SPACING;
+        cursorY += (int) (textRenderer.fontHeight * largeTextScale) + SPACING;
 
         // ─── Draw clues ────────────────────────────────────────────────────────
         for (int i = 0; i < clueCount; i++) {
@@ -254,7 +257,7 @@ public class ClueScrollHudElement {
 
         // ─── Draw expiration ───────────────────────────────────────────────────
         matrices.push();
-        matrices.scale(small_text_scale, small_text_scale, 1.0f);
+        matrices.scale(smallTextScale, smallTextScale, 1.0f);
 
         long timeLeft = scroll.getExpire() - System.currentTimeMillis();
         // If there is time left, render time until expiration.
@@ -263,24 +266,24 @@ public class ClueScrollHudElement {
             text = Text.literal(timeLeftText);
 
             int color = timeLeft < 60 * 60 * 1000 ? 0xAA0000 : 0xAAAAAA; // Red if less than 1 hour, grey otherwise.
-            scaledX = (int) (contentLeft / small_text_scale);
-            scaledY = (int) (cursorY / small_text_scale);
+            scaledX = (int) (contentLeft / smallTextScale);
+            scaledY = (int) (cursorY / smallTextScale);
             context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, color);
-            maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * small_text_scale));
+            maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * smallTextScale));
         }
         // Otherwise, render expired message.
         else {
             String expiredText = "Scroll expired!";
             text = Text.literal(expiredText);
-            scaledX = (int) (contentLeft / small_text_scale);
-            scaledY = (int) (cursorY / small_text_scale);
+            scaledX = (int) (contentLeft / smallTextScale);
+            scaledY = (int) (cursorY / smallTextScale);
             context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, 0xAA0000);
-            maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * small_text_scale));
+            maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * smallTextScale));
         }
 
         matrices.pop();
 
-        cursorY += (int) (textRenderer.fontHeight * small_text_scale);
+        cursorY += (int) (textRenderer.fontHeight * smallTextScale);
 
         // ─── Draw Background ──────────────────────────────────────────────
         int backgroundRight = contentLeft + maxTextWidth + PADDING;
