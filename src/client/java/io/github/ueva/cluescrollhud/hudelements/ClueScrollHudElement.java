@@ -235,6 +235,11 @@ public class ClueScrollHudElement {
             ClueTask clue = scroll.getClues()
                     .get(i);
 
+            // Skip completed clues if the config option is enabled.
+            if (config.hideCompleted && clue.isCompleted()) {
+                continue;
+            }
+
             // Objective
             text = Text.literal(clue.getFormattedObjective() + ".");
             context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, 0xFFFFFF);
@@ -251,12 +256,13 @@ public class ClueScrollHudElement {
                         "Progress: " + clue.getCompleted() + "/" + clue.getAmount() + " (" + clue.getPercentCompleted() + "%)";
                 text = Text.literal(progress);
 
+                // Lerp progress colour between red (0xFF5555) and green (0x55FF55)
                 if (config.colourByProgress) {
-                    // Lerp progress colour between red (0xFF5555) and green (0x55FF55)
                     int progressColour =
                             ColorHelper.lerp((float) clue.getPercentCompleted() / 100.0f, 0xFF5555, 0x55FF55);
                     context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, progressColour);
                 }
+                // Use default colour (minecraft gold).
                 else {
                     context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, 0xFFAA00);
                 }
