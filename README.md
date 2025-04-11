@@ -88,14 +88,7 @@ Please do not contact any developers or maintainers directly.
 
 ### Is this mod allowed on Vulengate?
 
-Who knows. I'm not a staff member, so I can't say for sure. But, as far as I know, this mod doesn't break any rules or
-provide any kind of unfair advantage.
-
-Regardless, this mod is completely client-side, so they'd have no way of knowing you're using it unless you tell them.
-If you decide you want to dob yourself in, that's up to you.
-
-I made this primarily for my own use, but made it publicly available after seeing others complaining about having to
-constantly check their inventory to see their clue scroll progress.
+TODO: Check with staff to get clarification about whether this mod is allowed. If it is, insert evidence here.
 
 ### Can you port this mod to Forge/NeoForge?
 
@@ -113,6 +106,13 @@ This is orders of magnitude less likely than a Forge port. I've honestly never e
 developed an addon for it. I don't intend on starting now.
 
 My advice: use the Java edition of Minecraft. Be like the cool kids back in 2009.
+
+### Can you update to [version]?
+
+Yes! I will do my very best to keep this mod up to date with the latest version of Minecraft used on Vulengate.
+
+Sometimes, this may take a little while, especially if there are breaking changes in (1) the Fabric or Minecraft APIs,
+or (2) the clue scroll plugin used on Vulengate.
 
 ### Can you fix [bug]?
 
