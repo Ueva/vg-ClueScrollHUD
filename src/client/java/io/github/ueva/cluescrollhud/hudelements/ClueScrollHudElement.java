@@ -251,14 +251,26 @@ public class ClueScrollHudElement {
         matrices.scale(small_text_scale, small_text_scale, 1.0f);
 
         long timeLeft = scroll.getExpire() - System.currentTimeMillis();
-        String timeLeftText = "Expires in " + DateTimeUtils.formatDuration(timeLeft);
-        text = Text.literal(timeLeftText);
+        // If there is time left, render time until expiration.
+        if (timeLeft > 0) {
+            String timeLeftText = "Expires in " + DateTimeUtils.formatDuration(timeLeft);
+            text = Text.literal(timeLeftText);
 
-        int color = timeLeft < 60 * 60 * 1000 ? 0xAA0000 : 0xAAAAAA; // Red if less than 1 hour, grey otherwise.
-        scaledX = (int) (contentLeft / small_text_scale);
-        scaledY = (int) (cursorY / small_text_scale);
-        context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, color);
-        maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * small_text_scale));
+            int color = timeLeft < 60 * 60 * 1000 ? 0xAA0000 : 0xAAAAAA; // Red if less than 1 hour, grey otherwise.
+            scaledX = (int) (contentLeft / small_text_scale);
+            scaledY = (int) (cursorY / small_text_scale);
+            context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, color);
+            maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * small_text_scale));
+        }
+        // Otherwise, render expired message.
+        else {
+            String expiredText = "Scroll expired!";
+            text = Text.literal(expiredText);
+            scaledX = (int) (contentLeft / small_text_scale);
+            scaledY = (int) (cursorY / small_text_scale);
+            context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, 0xAA0000);
+            maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * small_text_scale));
+        }
 
         matrices.pop();
 
@@ -325,7 +337,6 @@ public class ClueScrollHudElement {
                 LOGGER.info("Removed clue scroll from list: {}", scroll.getUuid());
             }
         }
-
     }
 
     private static boolean isClueScrollInList(String uuid) {
