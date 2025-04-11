@@ -40,7 +40,7 @@ public class ModConfig implements ConfigData {
 
     // Update interval (in milliseconds).
     @ConfigEntry.Category("Behaviour")
-    public int updateInterval = 100;
+    public int updateInterval = 250;
 
     // Whether to colour based on clue progress, and fallback colour.
     @ConfigEntry.Category("Behaviour")

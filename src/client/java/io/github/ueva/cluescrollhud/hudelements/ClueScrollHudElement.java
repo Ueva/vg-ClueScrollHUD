@@ -34,13 +34,13 @@ public class ClueScrollHudElement {
     private static final int MARGIN = 5;
     private static final int PADDING = 10;
     private static final int SPACING = 5;
-
     private static final ArrayList<ClueScroll> scrolls = new ArrayList<>();
     private static final ModConfig config = AutoConfig.getConfigHolder(ModConfig.class)
             .getConfig();
 
     private static boolean isVisible = true;
     private static int selectedClueScrollIndex = 0;
+    private static long nextUpdateTime = 0;
 
     public static void render(DrawContext context, RenderTickCounter tickCounter) {
 
@@ -61,7 +61,10 @@ public class ClueScrollHudElement {
         boolean isHudHidden = client.options.hudHidden;
 
         // Update the local clue scroll list.
-        updateScrollList(client);
+        if (System.currentTimeMillis() > nextUpdateTime) {
+            updateScrollList(client);
+            nextUpdateTime = System.currentTimeMillis() + config.updateInterval;
+        }
 
         // Render the ClueScrollHudElement if it's enabled, the HUD is visible, and the F3 debug screen is not visible.
         if (isVisible && !isDebugScreenVisible && !isHudHidden) {
