@@ -1,41 +1,45 @@
 {
-	"schemaVersion": 1,
-	"id": "vg-cluescrollhud",
-	"version": "${version}",
-	"name": "vg ClueScrollHUD",
-	"description": "This is an example description! Tell everyone what your mod is about!",
-	"authors": [
-		"Me!"
-	],
-	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
-	},
-	"license": "CC0-1.0",
-	"icon": "assets/vg-cluescrollhud/icon.png",
-	"environment": "*",
-	"entrypoints": {
-		"main": [
-			"io.github.ueva.cluescrollhud.VgClueScrollHUD"
-		],
-		"client": [
-			"io.github.ueva.cluescrollhud.VgClueScrollHUDClient"
-		]
-	},
-	"mixins": [
-		"vg-cluescrollhud.mixins.json",
-		{
-			"config": "vg-cluescrollhud.client.mixins.json",
-			"environment": "client"
-		}
-	],
-	"depends": {
-		"fabricloader": ">=0.16.10",
-		"minecraft": "~1.21.4",
-		"java": ">=21",
-		"fabric-api": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
-	}
+  "schemaVersion": 1,
+  "id": "vg-cluescrollhud",
+  "version": "${version}",
+  "name": "vg ClueScrollHUD",
+  "description": "A lightweight HUD mod for the Vulengate Minecraft server that displays clue scroll objectives and progress.",
+  "authors": [
+    "Ueva"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Ueva/vg-ClueScrollHUD",
+    "issues": "https://github.com/Ueva/vg-ClueScrollHUD/issues"
+  },
+  "license": "MIT License",
+  "icon": "assets/vg-cluescrollhud/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "io.github.ueva.cluescrollhud.VgClueScrollHUD"
+    ],
+    "client": [
+      "io.github.ueva.cluescrollhud.VgClueScrollHUDClient"
+    ],
+    "modmenu": [
+      "io.github.ueva.cluescrollhud.config.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "vg-cluescrollhud.mixins.json",
+    {
+      "config": "vg-cluescrollhud.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.10",
+    "minecraft": "~1.21.4",
+    "java": ">=21",
+    "fabric-api": "*",
+    "cloth-config": "~17.0.144"
+  },
+  "recommends": {
+    "modmenu": "~13.0.2"
+  }
 }
