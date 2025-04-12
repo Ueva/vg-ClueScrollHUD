@@ -4,7 +4,7 @@ This is a simple mod for use on the [Vulengate](https://www.vulengate.com) Minec
 about the [Clue Scrolls](https://wikijs.vulengate.com/en/Cluescrolls) in your inventory directly on your HUD. Using this
 mod, you'll no longer have to open your inventory to check your progress towards completing your clues!
 <p align="center">
-    <img alt="Animated .gif showing the Vulengate Clue Scroll HUD mod being used." height="266" src="assets/demo.png" width="261"/>
+    <img alt="Animated .gif showing the Vulengate Clue Scroll HUD mod being used." height="399" src="assets/demo.png" width="392"/>
 </p>
 
 ### Disclaimer
