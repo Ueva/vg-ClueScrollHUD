@@ -1,4 +1,4 @@
-# Vulengate Clue Scroll HUD
+# 📜 Vulengate Clue Scroll HUD
 
 This is a simple mod for use on the [Vulengate](https://www.vulengate.com) Minecraft server. It displays information
 about the [Clue Scrolls](https://wikijs.vulengate.com/en/Cluescrolls) in your inventory directly on your HUD. Using this
@@ -6,8 +6,9 @@ mod, you'll no longer have to open your inventory to check your progress towards
 
 ![Screenshot of the Vulengate Clue Scroll HUD mod being used.](assets/demo.gif)
 
-**IMPORTANT:** *This project is **not** official endorsed by Vulengate.* Please do not contact Vulengate staff for
-support with using this mod, because they are not responsible for it whatsoever.
+**IMPORTANT:** *This project is **not** official endorsed by Vulengate.* <br>
+Please do not contact Vulengate staff for support with using this mod, because they are not responsible for it
+whatsoever.
 
 ---
 
@@ -18,17 +19,19 @@ This is a very simple mod, so getting up and running should be a breeze!
 Below, you'll find guidance about (1) what dependencies you need to install, (2) how to download this mod, (3) how to
 install this mod, (4) how to use this mod in-game, and (5) how to configure it to your liking.
 
-### 1. Setting Up Dependencies
+### 1. Installing Dependencies
 
-The only hard dependencies this mod has are the [Fabric Loader](https://fabricmc.net) and [API](https://fabricmc.net).
+This mod has the following hard dependencies:
 
-This mod also integrates with the [Mod Menu](https://modrinth.com/mod/modmenu) mod and
-[cloth config API](https://modrinth.com/mod/cloth-config). Although these mods are not required, they make configuring
-this mod much easier.
+- [Fabric Loader & API](https://modrinth.com/mod/fabric-api)
+- [Cloth Config API](https://modrinth.com/mod/cloth-config)
+
+This mod also has an optional dependency on the [Mod Menu](https://modrinth.com/mod/modmenu) mod. <br>
+Although Mod Menu is not required, it will make configuring this mod much easier.
 
 ### 2. Downloading the Latest Release
 
-For most users, the easiest way to download this mod is via [Modrinth](https://example.com/todo-add-modrinth-link/).
+For most users, the easiest way to download this mod is via [Modrinth](https://modrinth.com/project/vg-cluescrollhud/).
 
 Some users may prefer to download the latest release directly from GitHub. You can find the all pre-built `.jar`
 releases on the [Releases tab](https://github.com/Ueva/vg-ClueScrollHUD/releases) of this repository.
@@ -52,12 +55,12 @@ requires no manual action on your part - it will display information about your 
 
 This mod's keybinds can be changed in the Controls menu. The default keybinds are:
 
-- `'` - Toggle the Clue Scroll HUD
+- `'` - Toggle the Clue Scroll HUD.
 - `[` - Show the previous clue scroll in your inventory.
 - `]` - Show the next clue scroll in your inventory.
 
-There are a few configuration options that can be changed via Mod Menu or the Cloth Config API.
-If you prefer not to use these mods, you can edit the configuration file (`/config/vg-cluescrollhud.properties`)
+There are a few configuration options that can be changed via Mod Menu.
+If you have not installed Mod Menu, you can edit the configuration file (`/config/vg-cluescrollhud.toml`)
 directly.
 
 ## Getting Involved
@@ -76,12 +79,14 @@ Please ensure that your code is well-documented and that you have followed the c
 
 ### Reporting Bugs
 
-If you would like to report a bug, please open an issue on the GitHub repository. Please do not
-contact any developers or maintainers directly.
+If you would like to report a bug, please [open an issue](https://github.com/Ueva/vg-ClueScrollHUD/issues) on the
+GitHub repository.
+Please do not contact any developers or maintainers directly.
 
 ### Requesting Features
 
-If you would like to request a feature, please open an issue on the GitHub repository and tag it as a feature request.
+If you would like to request a feature, please [open an issue](https://github.com/Ueva/vg-ClueScrollHUD/issues) on the
+GitHub repository and tag it as a feature request.
 Please do not contact any developers or maintainers directly.
 
 ## FAQs
@@ -97,7 +102,8 @@ Maybe in the future, but not any time soon.
 I've not developed a Forge mod for over a decade, so I don't have any plans to do this any time soon.
 If you'd like to contribute a Forge port, please get in touch.
 
-Note: It may be possible to use this mod on NeoForge using the [Sinytra Connector](https://modrinth.com/mod/connector)
+**Note**: It may be possible to use this mod on NeoForge using
+the [Sinytra Connector](https://modrinth.com/mod/connector)
 mod.
 
 ### Can you port this mod to Bedrock Edition?
@@ -116,17 +122,18 @@ or (2) the clue scroll plugin used on Vulengate.
 
 ### Can you fix [bug]?
 
-Probably! Please open an issue on the GitHub repository and tag it as a bug report.
+Probably! Please [open an issue](https://github.com/Ueva/vg-ClueScrollHUD/issues) on the GitHub repository and tag it as
+a bug report.
 
 Bug fixes take priority over feature additions, so I'll try to implement them as soon as I can.
 
 ### Can you add [feature]?
 
-Maybe! If you have a feature request, please open an issue on the GitHub repository and tag it as a
-feature request.
+Maybe! If you have a feature request, please [open an issue](https://github.com/Ueva/vg-ClueScrollHUD/issues) on the
+GitHub repository and tag it as a feature request.
 
 The main things that will influence whether or not a feature is added are (1) how useful it is to the community in
-general, and (2) how much free time I have to work on this project (usually, very little).
+general, and (2) how much free time I have to work on this project.
 
 Of course, the fastest way to get a feature added is to implement it yourself and submit a pull request!
 
@@ -138,3 +145,12 @@ I'll do my best to respond to issues and pull requests in a timely manner, but I
 
 To increase the chances of your issue being responded to quickly, please ensure that you have followed the bug report
 guide for submitting bugs, or the contribution guidelines for submitting pull requests.
+
+### Why isn't my task progress being updated immediately on the HUD?
+
+This mod reads your progress directly from the clue scroll items in your inventory - the HUD will update as soon as the
+scroll items themselves are updated. This is usually immediate, but there may be a slight delay for certain types
+of clues. Movement-related tasks (e.g., "Walk..." or "Ride...") seem particularly prone to this.
+
+This isn’t a bug with this mod. Rather, it is a limitation of how the clue scroll plugin works on the Vulengate server.
+Once the server registers your progress and updates the scroll's data, the HUD will reflect it immediately after.
