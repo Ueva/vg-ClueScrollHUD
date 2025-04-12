@@ -16,10 +16,10 @@ public class ModConfig implements ConfigData {
     public float globalScale = 1.0f;
 
     @ConfigEntry.Category("Display")
-    public float largeTextScale = 1.1f;
+    public float largeTextScale = 1.15f;
 
     @ConfigEntry.Category("Display")
-    public float smallTextScale = 0.75f;
+    public float smallTextScale = 0.70f;
 
     // Position of the top-left corner of the HUD.
     @ConfigEntry.Category("Display")
@@ -42,7 +42,7 @@ public class ModConfig implements ConfigData {
     @ConfigEntry.Category("Behaviour")
     public int updateInterval = 250;
 
-    // Whether to colour based on clue progress, and fallback colour.
+    // Whether to colour based on clue progress.
     @ConfigEntry.Category("Behaviour")
     public boolean colourByProgress = true;
 
