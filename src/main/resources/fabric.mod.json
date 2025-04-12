@@ -3,13 +3,13 @@
   "id": "vg-cluescrollhud",
   "version": "${version}",
   "name": "vg ClueScrollHUD",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "A lightweight HUD mod for the Vulengate Minecraft server that displays clue scroll objectives and progress.",
   "authors": [
     "Ueva"
   ],
   "contact": {
     "homepage": "https://github.com/Ueva/vg-ClueScrollHUD",
-    "sources": "https://github.com/Ueva/vg-ClueScrollHUD"
+    "issues": "https://github.com/Ueva/vg-ClueScrollHUD/issues"
   },
   "license": "MIT License",
   "icon": "assets/vg-cluescrollhud/icon.png",
