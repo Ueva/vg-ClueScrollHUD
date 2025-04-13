@@ -23,7 +23,7 @@ public class NextPrevScrollKeybind {
         // Set up the keybinding to toggle the visibility of the ClueScrollHudElement.
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (prevScrollKeyBinding.wasPressed()) {
-                ClueScrollHudElement.prev_scroll();
+                ClueScrollHudElement.prevScroll();
             }
         });
 
@@ -38,7 +38,7 @@ public class NextPrevScrollKeybind {
         // Set up the keybinding to toggle the visibility of the ClueScrollHudElement.
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (nextScrollKeyBinding.wasPressed()) {
-                ClueScrollHudElement.next_scroll();
+                ClueScrollHudElement.nextScroll();
             }
         });
     }
