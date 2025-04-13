@@ -1,6 +1,6 @@
 package io.github.ueva.cluescrollhud.keybinds;
 
-import io.github.ueva.cluescrollhud.hudelements.ClueScrollHudElement;
+import io.github.ueva.cluescrollhud.hudelement.ClueScrollHudElement;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.option.KeyBinding;

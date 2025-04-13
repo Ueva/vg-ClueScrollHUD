@@ -1,4 +1,4 @@
-package io.github.ueva.cluescrollhud.hudelements;
+package io.github.ueva.cluescrollhud.hudelement;
 
 import io.github.ueva.cluescrollhud.models.ClueScroll;
 import io.github.ueva.cluescrollhud.models.ClueTask;
