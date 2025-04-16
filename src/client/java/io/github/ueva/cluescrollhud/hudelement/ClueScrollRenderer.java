@@ -19,6 +19,8 @@ public class ClueScrollRenderer {
     private static final int SPACING = 5;
     private final ModConfig config;
 
+    private int cachedMaxTextWidth = 0;
+
     public ClueScrollRenderer(ModConfig config) {
         this.config = config;
     }
@@ -57,10 +59,13 @@ public class ClueScrollRenderer {
 
         int clueCount = selectedScroll.getClueCount();
         int maxTextWidth = 0;
+
         int cursorY = MARGIN + PADDING;
 
         // Track where the top-left of the content begins
-        int contentLeft = MARGIN + PADDING;
+        int contentLeft = config.rightAlign ?
+                context.getScaledWindowWidth() - (MARGIN + PADDING + cachedMaxTextWidth) :
+                MARGIN + PADDING;
 
         // ─── Draw "Scroll X of Y" ──────────────────────────────────────────────
         matrices.push();
@@ -172,11 +177,14 @@ public class ClueScrollRenderer {
 
         cursorY += (int) (textRenderer.fontHeight * smallTextScale);
 
+        cachedMaxTextWidth = maxTextWidth;
+
         // ─── Draw Background ──────────────────────────────────────────────
         int backgroundRight = contentLeft + maxTextWidth + PADDING;
         int backgroundBottom = cursorY + PADDING;
 
-        context.fill(MARGIN, MARGIN, backgroundRight, backgroundBottom, 0x7F000000);
+        context.fill(contentLeft - PADDING, MARGIN, backgroundRight, backgroundBottom, 0x7F000000);
+
     }
 
     public void renderNoClueScrolls(DrawContext context, TextRenderer textRenderer) {
@@ -191,17 +199,20 @@ public class ClueScrollRenderer {
         int textWidth = textRenderer.getWidth(text);
         int textHeight = textRenderer.fontHeight;
 
+        int contentLeft =
+                config.rightAlign ? context.getScaledWindowWidth() - (MARGIN + PADDING + textWidth + PADDING) : MARGIN;
+
         // Render the background.
         context.fill(
+                contentLeft,
                 MARGIN,
-                MARGIN,
-                MARGIN + PADDING + textWidth + PADDING,
+                contentLeft + PADDING + textWidth + PADDING,
                 MARGIN + PADDING + textHeight + PADDING,
                 0,
                 0x7F000000
         );
 
         // Draw the "no cluescrolls" message.
-        context.drawTextWithShadow(textRenderer, text, MARGIN + PADDING, MARGIN + PADDING, 0xFFFFFF);
+        context.drawTextWithShadow(textRenderer, text, contentLeft + PADDING, MARGIN + PADDING, 0xFFFFFF);
     }
 }
