@@ -2,6 +2,7 @@ package io.github.ueva.cluescrollhud.hudelement;
 
 import io.github.ueva.cluescrollhud.VgClueScrollHUD;
 import io.github.ueva.cluescrollhud.config.ModConfig;
+import io.github.ueva.cluescrollhud.models.ClueScroll;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -48,11 +49,19 @@ public class ClueScrollHudElement {
         if (isVisible && !isDebugScreenVisible && !isHudHidden) {
             TextRenderer textRenderer = client.textRenderer;
 
+            // Get information about the selected scroll.
             int selectedIndex = scrollManager.getSelectedScrollIndex();
             int totalScrolls = scrollManager.getScrollCount();
 
             // Render the clue scrolls.
-            scrollRenderer.render(context, textRenderer, scrollManager.getScrolls(), selectedIndex, totalScrolls);
+            if (totalScrolls > 0) {
+                ClueScroll selectedScroll = scrollManager.getSelectedScroll();
+                scrollRenderer.render(context, textRenderer, selectedScroll, selectedIndex, totalScrolls);
+            }
+            else {
+                scrollRenderer.render(context, textRenderer);
+            }
+
         }
     }
 

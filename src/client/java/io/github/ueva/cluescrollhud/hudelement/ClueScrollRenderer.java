@@ -11,8 +11,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.ColorHelper;
 
-import java.util.List;
-
 
 public class ClueScrollRenderer {
 
@@ -25,17 +23,24 @@ public class ClueScrollRenderer {
         this.config = config;
     }
 
-    public void render(DrawContext context, TextRenderer textRenderer, List<ClueScroll> scrolls, int selectedIndex,
+    public void render(DrawContext context, TextRenderer textRenderer) {
+        render(context, textRenderer, null, 0, 0);
+    }
+
+    public void render(DrawContext context, TextRenderer textRenderer, ClueScroll selectedScroll, int selectedIndex,
                        int totalScrolls) {
 
+        // Apply global scale and offset from config.
         MatrixStack matrices = context.getMatrices();
         matrices.push();
         matrices.scale(config.globalScale, config.globalScale, 1.0f);
         matrices.translate(config.x, config.y, 0.0f);
 
+        // Render the currently selected scroll.
         if (totalScrolls > 0) {
-            renderClueScrolls(context, textRenderer, scrolls, selectedIndex, totalScrolls);
+            renderClueScrolls(context, textRenderer, selectedScroll, selectedIndex, totalScrolls);
         }
+        // Render the "no scrolls" message.
         else {
             renderNoClueScrolls(context, textRenderer);
         }
@@ -43,15 +48,14 @@ public class ClueScrollRenderer {
         matrices.pop();
     }
 
-    public void renderClueScrolls(DrawContext context, TextRenderer textRenderer, List<ClueScroll> scrolls,
+    public void renderClueScrolls(DrawContext context, TextRenderer textRenderer, ClueScroll selectedScroll,
                                   int selectedIndex, int totalScrolls) {
         MatrixStack matrices = context.getMatrices();
 
         float largeTextScale = config.largeTextScale;
         float smallTextScale = config.smallTextScale;
 
-        ClueScroll scroll = scrolls.get(selectedIndex);
-        int clueCount = scroll.getClueCount();
+        int clueCount = selectedScroll.getClueCount();
         int maxTextWidth = 0;
         int cursorY = MARGIN + PADDING;
 
@@ -76,14 +80,20 @@ public class ClueScrollRenderer {
         matrices.push();
         matrices.scale(largeTextScale, largeTextScale, 1.0f);
 
-        String tierName = scroll.getTier()
+        String tierName = selectedScroll.getTier()
                 .substring(0, 1)
-                .toUpperCase() + scroll.getTier()
+                .toUpperCase() + selectedScroll.getTier()
                 .substring(1) + " Clue Scroll";
         text = Text.literal(tierName);
         scaledX = (int) (contentLeft / largeTextScale);
         scaledY = (int) (cursorY / largeTextScale);
-        context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, TierColourUtils.getColour(scroll.getTier()));
+        context.drawTextWithShadow(
+                textRenderer,
+                text,
+                scaledX,
+                scaledY,
+                TierColourUtils.getColour(selectedScroll.getTier())
+        );
         maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * largeTextScale));
         matrices.pop();
 
@@ -91,7 +101,7 @@ public class ClueScrollRenderer {
 
         // ─── Draw clues ────────────────────────────────────────────────────────
         for (int i = 0; i < clueCount; i++) {
-            ClueTask clue = scroll.getClues()
+            ClueTask clue = selectedScroll.getClues()
                     .get(i);
 
             // Skip completed clues if the config option is enabled.
@@ -99,13 +109,13 @@ public class ClueScrollRenderer {
                 continue;
             }
 
-            // Objective
+            // Task Objective.
             text = Text.literal(clue.getFormattedObjective() + ".");
             context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, 0xFFFFFF);
             maxTextWidth = Math.max(maxTextWidth, textRenderer.getWidth(text));
             cursorY += textRenderer.fontHeight;
 
-            // Progress
+            // Task Progress.
             if (clue.isCompleted()) {
                 text = Text.literal("Completed!");
                 context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, 0x55FF55);
@@ -115,7 +125,7 @@ public class ClueScrollRenderer {
                         "Progress: " + clue.getCompleted() + "/" + clue.getAmount() + " (" + clue.getPercentCompleted() + "%)";
                 text = Text.literal(progress);
 
-                // Lerp progress colour between red (0xFF5555) and green (0x55FF55)
+                // Lerp progress colour between red (0xFF5555) and green (0x55FF55).
                 if (config.colourByProgress) {
                     int progressColour =
                             ColorHelper.lerp((float) clue.getPercentCompleted() / 100.0f, 0xFF5555, 0x55FF55);
@@ -136,7 +146,7 @@ public class ClueScrollRenderer {
         matrices.push();
         matrices.scale(smallTextScale, smallTextScale, 1.0f);
 
-        long timeLeft = scroll.getExpire() - System.currentTimeMillis();
+        long timeLeft = selectedScroll.getExpire() - System.currentTimeMillis();
         // If there is time left, render time until expiration.
         if (timeLeft > 0) {
             String timeLeftText = "Expires in " + DateTimeUtils.formatDuration(timeLeft);
