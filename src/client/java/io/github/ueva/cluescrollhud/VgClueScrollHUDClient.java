@@ -2,7 +2,7 @@ package io.github.ueva.cluescrollhud;
 
 import io.github.ueva.cluescrollhud.commands.CommandRegistrar;
 import io.github.ueva.cluescrollhud.config.ModConfig;
-import io.github.ueva.cluescrollhud.hudelements.HudElementRegistrar;
+import io.github.ueva.cluescrollhud.hudelement.HudElementRegistrar;
 import io.github.ueva.cluescrollhud.keybinds.KeybindRegistrar;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.Toml4jConfigSerializer;
