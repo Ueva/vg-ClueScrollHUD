@@ -33,8 +33,8 @@ public class ClueScrollRenderer {
         // Apply global scale and offset from config.
         MatrixStack matrices = context.getMatrices();
         matrices.push();
-        matrices.scale(config.globalScale, config.globalScale, 1.0f);
         matrices.translate(config.x, config.y, 0.0f);
+        matrices.scale(config.globalScale, config.globalScale, 1.0f);
 
         // Render the currently selected scroll.
         if (totalScrolls > 0) {
@@ -53,7 +53,7 @@ public class ClueScrollRenderer {
         int maxTextWidth = measureMaxTextWidth(textRenderer, selectedScroll, selectedIndex, totalScrolls);
 
         int contentLeft = config.rightAlign ?
-                context.getScaledWindowWidth() - (MARGIN + PADDING + maxTextWidth) :
+                (int) (context.getScaledWindowWidth() / config.globalScale) - (MARGIN + PADDING + maxTextWidth) :
                 MARGIN + PADDING;
 
         renderClueScrollContent(
@@ -247,8 +247,9 @@ public class ClueScrollRenderer {
         int textWidth = textRenderer.getWidth(text);
         int textHeight = textRenderer.fontHeight;
 
-        int contentLeft =
-                config.rightAlign ? context.getScaledWindowWidth() - (MARGIN + PADDING + textWidth + PADDING) : MARGIN;
+        int contentLeft = config.rightAlign ?
+                (int) (context.getScaledWindowWidth() / config.globalScale) - (MARGIN + PADDING + textWidth + PADDING) :
+                MARGIN;
 
         // Render the background.
         context.fill(
