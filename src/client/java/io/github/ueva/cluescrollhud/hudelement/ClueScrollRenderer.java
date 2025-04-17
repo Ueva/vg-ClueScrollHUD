@@ -33,8 +33,8 @@ public class ClueScrollRenderer {
         // Apply global scale and offset from config.
         MatrixStack matrices = context.getMatrices();
         matrices.push();
-        matrices.scale(config.globalScale, config.globalScale, 1.0f);
         matrices.translate(config.x, config.y, 0.0f);
+        matrices.scale(config.globalScale, config.globalScale, 1.0f);
 
         // Render the currently selected scroll.
         if (totalScrolls > 0) {
@@ -50,17 +50,72 @@ public class ClueScrollRenderer {
 
     public void renderClueScrolls(DrawContext context, TextRenderer textRenderer, ClueScroll selectedScroll,
                                   int selectedIndex, int totalScrolls) {
+        int maxTextWidth = measureMaxTextWidth(textRenderer, selectedScroll, selectedIndex, totalScrolls);
+
+        int contentLeft = config.rightAlign ?
+                (int) (context.getScaledWindowWidth() / config.globalScale) - (MARGIN + PADDING + maxTextWidth) :
+                MARGIN + PADDING;
+
+        renderClueScrollContent(
+                context,
+                textRenderer,
+                selectedScroll,
+                selectedIndex,
+                totalScrolls,
+                contentLeft,
+                maxTextWidth
+        );
+
+    }
+
+    private int measureMaxTextWidth(TextRenderer textRenderer, ClueScroll scroll, int selectedIndex, int totalScrolls) {
+        float large = config.largeTextScale;
+        float small = config.smallTextScale;
+        int maxWidth = 0;
+
+        // Scroll index
+        String indexText = "Scroll " + (selectedIndex + 1) + " of " + totalScrolls;
+        maxWidth = Math.max(maxWidth, (int) (textRenderer.getWidth(indexText) * small));
+
+        // Tier name
+        String tier = scroll.getTier();
+        String tierText = tier.substring(0, 1)
+                .toUpperCase() + tier.substring(1) + " Clue Scroll";
+        maxWidth = Math.max(maxWidth, (int) (textRenderer.getWidth(tierText) * large));
+
+        for (ClueTask clue : scroll.getClues()) {
+            if (config.hideCompleted && clue.isCompleted()) {
+                continue;
+            }
+
+            String objective = clue.getFormattedObjective() + ".";
+            maxWidth = Math.max(maxWidth, textRenderer.getWidth(objective));
+
+            String progress = clue.isCompleted() ?
+                    "Completed!" :
+                    "Progress: " + clue.getCompleted() + "/" + clue.getAmount() + " (" + clue.getPercentCompleted() + "%)";
+            maxWidth = Math.max(maxWidth, textRenderer.getWidth(progress));
+        }
+
+        // Expiration
+        String expireText = (scroll.getExpire() - System.currentTimeMillis()) > 0 ?
+                "Expires in " + DateTimeUtils.formatDuration(scroll.getExpire() - System.currentTimeMillis()) :
+                "Scroll expired!";
+        maxWidth = Math.max(maxWidth, (int) (textRenderer.getWidth(expireText) * small));
+
+        return maxWidth;
+    }
+
+    private void renderClueScrollContent(DrawContext context, TextRenderer textRenderer, ClueScroll selectedScroll,
+                                         int selectedIndex, int totalScrolls, int contentLeft, int maxTextWidth) {
         MatrixStack matrices = context.getMatrices();
 
         float largeTextScale = config.largeTextScale;
         float smallTextScale = config.smallTextScale;
 
         int clueCount = selectedScroll.getClueCount();
-        int maxTextWidth = 0;
-        int cursorY = MARGIN + PADDING;
 
-        // Track where the top-left of the content begins
-        int contentLeft = MARGIN + PADDING;
+        int cursorY = MARGIN + PADDING;
 
         // ─── Draw "Scroll X of Y" ──────────────────────────────────────────────
         matrices.push();
@@ -176,7 +231,8 @@ public class ClueScrollRenderer {
         int backgroundRight = contentLeft + maxTextWidth + PADDING;
         int backgroundBottom = cursorY + PADDING;
 
-        context.fill(MARGIN, MARGIN, backgroundRight, backgroundBottom, 0x7F000000);
+        context.fill(contentLeft - PADDING, MARGIN, backgroundRight, backgroundBottom, 0x7F000000);
+
     }
 
     public void renderNoClueScrolls(DrawContext context, TextRenderer textRenderer) {
@@ -191,17 +247,21 @@ public class ClueScrollRenderer {
         int textWidth = textRenderer.getWidth(text);
         int textHeight = textRenderer.fontHeight;
 
+        int contentLeft = config.rightAlign ?
+                (int) (context.getScaledWindowWidth() / config.globalScale) - (MARGIN + PADDING + textWidth + PADDING) :
+                MARGIN;
+
         // Render the background.
         context.fill(
+                contentLeft,
                 MARGIN,
-                MARGIN,
-                MARGIN + PADDING + textWidth + PADDING,
+                contentLeft + PADDING + textWidth + PADDING,
                 MARGIN + PADDING + textHeight + PADDING,
                 0,
                 0x7F000000
         );
 
         // Draw the "no cluescrolls" message.
-        context.drawTextWithShadow(textRenderer, text, MARGIN + PADDING, MARGIN + PADDING, 0xFFFFFF);
+        context.drawTextWithShadow(textRenderer, text, contentLeft + PADDING, MARGIN + PADDING, 0xFFFFFF);
     }
 }

@@ -75,6 +75,9 @@ public class ClueScrollManager {
                 LOGGER.info("Removed clue scroll from list: {}", scroll.getUuid());
             }
         }
+
+        // Ensure the selected index is valid.
+        updateSelectedIndex();
     }
 
     public List<ClueScroll> getScrolls() {

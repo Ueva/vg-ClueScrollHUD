@@ -21,6 +21,9 @@ public class ModConfig implements ConfigData {
     @ConfigEntry.Category("Display")
     public float smallTextScale = 0.70f;
 
+    @ConfigEntry.Category("Display")
+    public boolean rightAlign = false;
+
     // Position of the top-left corner of the HUD.
     @ConfigEntry.Category("Display")
     public float x = 0.0f;
