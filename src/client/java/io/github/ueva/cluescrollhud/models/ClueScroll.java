@@ -13,13 +13,16 @@ public class ClueScroll {
     private final String tier;
     private final long created;
     private final long expire;
-    private ArrayList<ClueTask> clues;
+    private final ArrayList<ClueTask> clues;
 
-    public ClueScroll(String uuid, String tier, long created, long expire, ArrayList<ClueTask> clues) {
+    private int invPosition;
+
+    public ClueScroll(String uuid, String tier, long created, long expire, int invPosition, ArrayList<ClueTask> clues) {
         this.uuid = uuid;
         this.tier = tier;
         this.created = created;
         this.expire = expire;
+        this.invPosition = invPosition;
         this.clues = clues;
     }
 
@@ -37,6 +40,14 @@ public class ClueScroll {
 
     public long getExpire() {
         return expire;
+    }
+
+    public int getInvPosition() {
+        return invPosition;
+    }
+
+    public void setInvPosition(int invPosition) {
+        this.invPosition = invPosition;
     }
 
     public ArrayList<ClueTask> getClues() {
@@ -70,7 +81,7 @@ public class ClueScroll {
         else if (reverse) {
             Collections.reverse(sortedClues);
         }
-        
+
         return sortedClues;
     }
 
