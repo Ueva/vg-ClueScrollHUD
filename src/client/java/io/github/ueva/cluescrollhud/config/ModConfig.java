@@ -51,7 +51,7 @@ public class ModConfig implements ConfigData {
 
     // Clue task sorting mode.
     @ConfigEntry.Category("Behaviour")
-    public ScrollSortMode scrollSortMode = ScrollSortMode.DEFAULT;
+    public ScrollSortMode scrollSortMode = ScrollSortMode.INV_POSITION;
 
     // Reverse scroll sort order.
     @ConfigEntry.Category("Behaviour")
