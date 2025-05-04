@@ -1,7 +1,7 @@
 package io.github.ueva.cluescrollhud.config;
 
 public enum TaskSortMode {
-    DEFAULT("Default"),
+    DEFAULT("Original"),
     PROGRESS_AMOUNT("Progress (Amount)"),
     PROGRESS_PERCENT("Progress (Percentage)"),
     OBJECTIVE_TYPE("Objective Type");
