@@ -12,8 +12,12 @@
   "text.autoconfig.vg-cluescrollhud.option.hideWhenNoClue": "Hide HUD When No Scrolls in Inventory",
   "text.autoconfig.vg-cluescrollhud.option.hideCompleted": "Hide Completed Clue Tasks",
   "text.autoconfig.vg-cluescrollhud.option.updateInterval": "HUD Update Interval (milliseconds)",
-  "text.autoconfig.vg-cluescrollhud.option.colourByProgress": "Colour Clue Text by Progress",
+  "text.autoconfig.vg-cluescrollhud.option.colourByProgress": "Colour Clue Task Text by Progress",
   "text.autoconfig.vg-cluescrollhud.option.rightAlign": "Right-Align HUD",
+  "text.autoconfig.vg-cluescrollhud.option.scrollSortMode": "Clue Scroll Sort Mode",
+  "text.autoconfig.vg-cluescrollhud.option.reverseScrollSort": "Reverse Clue Scroll Order",
+  "text.autoconfig.vg-cluescrollhud.option.taskSortMode": "Clue Task Sort Mode",
+  "text.autoconfig.vg-cluescrollhud.option.reverseTaskSort": "Reverse Clue Task Order",
   "text.autoconfig.vg-cluescrollhud.category.Display": "Display",
   "text.autoconfig.vg-cluescrollhud.category.Behaviour": "Behaviour"
 }

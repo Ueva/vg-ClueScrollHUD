@@ -11,6 +11,8 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.ColorHelper;
 
+import java.util.ArrayList;
+
 
 public class ClueScrollRenderer {
 
@@ -154,10 +156,11 @@ public class ClueScrollRenderer {
 
         cursorY += (int) (textRenderer.fontHeight * largeTextScale) + SPACING;
 
+
         // ─── Draw clues ────────────────────────────────────────────────────────
+        ArrayList<ClueTask> sortedClues = selectedScroll.getSortedClues(config.taskSortMode, config.reverseTaskSort);
         for (int i = 0; i < clueCount; i++) {
-            ClueTask clue = selectedScroll.getClues()
-                    .get(i);
+            ClueTask clue = sortedClues.get(i);
 
             // Skip completed clues if the config option is enabled.
             if (config.hideCompleted && clue.isCompleted()) {
