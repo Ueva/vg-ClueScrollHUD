@@ -49,4 +49,20 @@ public class ModConfig implements ConfigData {
     @ConfigEntry.Category("Behaviour")
     public boolean colourByProgress = true;
 
+    // Clue task sorting mode.
+    @ConfigEntry.Category("Behaviour")
+    public ScrollSortMode scrollSortMode = ScrollSortMode.INV_POSITION;
+
+    // Reverse scroll sort order.
+    @ConfigEntry.Category("Behaviour")
+    public boolean reverseScrollSort = false;
+
+    // Clue task sorting mode.
+    @ConfigEntry.Category("Behaviour")
+    public TaskSortMode taskSortMode = TaskSortMode.DEFAULT;
+
+    // Reverse task sort order.
+    @ConfigEntry.Category("Behaviour")
+    public boolean reverseTaskSort = false;
+
 }

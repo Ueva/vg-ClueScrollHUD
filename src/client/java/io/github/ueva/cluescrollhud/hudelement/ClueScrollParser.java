@@ -2,6 +2,7 @@ package io.github.ueva.cluescrollhud.hudelement;
 
 import io.github.ueva.cluescrollhud.models.ClueScroll;
 import io.github.ueva.cluescrollhud.models.ClueTask;
+import io.github.ueva.cluescrollhud.utils.TierNameUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
@@ -12,10 +13,10 @@ import java.util.ArrayList;
 
 public class ClueScrollParser {
 
-    public static ClueScroll parseScrollData(NbtCompound scrollData) {
+    public static ClueScroll parseScrollData(NbtCompound scrollData, int invPosition) {
         // Extract the scroll's UUID, tier, created time, and expiration time.
         String uuid = scrollData.getString("ClueScrolls.uuid");
-        String tier = scrollData.getString("ClueScrolls.tier");
+        String tier = TierNameUtils.sanitiseTierName(scrollData.getString("ClueScrolls.tier"));
         long created = scrollData.getLong("ClueScrolls.created");
         long expire = scrollData.getLong("ClueScrolls.expire");
 
@@ -34,10 +35,10 @@ public class ClueScrollParser {
             n++;
         }
 
-        return new ClueScroll(uuid, tier, created, expire, clues);
+        return new ClueScroll(uuid, tier, created, expire, invPosition, clues);
     }
 
-    public static ClueScroll parseScrollItem(ItemStack scrollItem) {
+    public static ClueScroll parseScrollItem(ItemStack scrollItem, int invPosition) {
         // Check if the item stack is empty or does not contain the custom data component.
         if (scrollItem.isEmpty() || !scrollItem.contains(DataComponentTypes.CUSTOM_DATA)) {
             return null;
@@ -60,6 +61,6 @@ public class ClueScrollParser {
         }
 
         // Parse and return the ClueScroll object.
-        return parseScrollData(scrollData);
+        return parseScrollData(scrollData, invPosition);
     }
 }

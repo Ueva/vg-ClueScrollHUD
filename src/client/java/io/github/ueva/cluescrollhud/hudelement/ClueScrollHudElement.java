@@ -20,7 +20,7 @@ public class ClueScrollHudElement {
     private static final Logger LOGGER = LoggerFactory.getLogger(VgClueScrollHUD.MOD_ID);
     private static final ModConfig config = AutoConfig.getConfigHolder(ModConfig.class)
             .getConfig();
-    private static final ClueScrollManager scrollManager = new ClueScrollManager();
+    private static final ClueScrollManager scrollManager = new ClueScrollManager(config);
     private static final ClueScrollRenderer scrollRenderer = new ClueScrollRenderer(config);
 
     private static boolean isVisible = true;

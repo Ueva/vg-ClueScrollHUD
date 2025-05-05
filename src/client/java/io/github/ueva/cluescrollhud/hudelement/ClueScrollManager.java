@@ -1,8 +1,11 @@
 package io.github.ueva.cluescrollhud.hudelement;
 
 import io.github.ueva.cluescrollhud.VgClueScrollHUD;
+import io.github.ueva.cluescrollhud.config.ModConfig;
+import io.github.ueva.cluescrollhud.config.ScrollSortMode;
 import io.github.ueva.cluescrollhud.models.ClueScroll;
 import io.github.ueva.cluescrollhud.models.ClueTask;
+import io.github.ueva.cluescrollhud.utils.TierOrderUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
@@ -13,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -21,7 +26,13 @@ public class ClueScrollManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(VgClueScrollHUD.MOD_ID);
 
     private final List<ClueScroll> scrolls = new ArrayList<>();
+    private final ModConfig config;
+
     private int selectedIndex = 0;
+
+    public ClueScrollManager(ModConfig config) {
+        this.config = config;
+    }
 
     public void updateScrolls(MinecraftClient client) {
         // Ensure the client and the player are not null.
@@ -56,11 +67,11 @@ public class ClueScrollManager {
 
                         // If this is a new scroll, add it to the list.
                         if (!isScrollInList(uuid)) {
-                            addScroll(scrollData);
+                            addScroll(scrollData, i);
                         }
                         // Otherwise, update the existing scroll's completion amount.
                         else {
-                            updateScroll(uuid, scrollData);
+                            updateScroll(uuid, scrollData, i);
                         }
                     }
                 }
@@ -84,6 +95,29 @@ public class ClueScrollManager {
         return scrolls;
     }
 
+    public List<ClueScroll> getSortedScrolls(ScrollSortMode mode, boolean reverse) {
+        List<ClueScroll> sortedScrolls = new ArrayList<>(scrolls);
+
+        Comparator<ClueScroll> comparator = switch (mode) {
+            case TIER -> Comparator.comparingInt(scroll -> TierOrderUtils.getIndex(scroll.getTier()));
+            case START_TIME -> Comparator.comparingLong(ClueScroll::getCreated);
+            case EXPIRY_TIME -> Comparator.comparingLong(ClueScroll::getExpire);
+            case INV_POSITION -> Comparator.comparingInt(ClueScroll::getInvPosition);
+            case DEFAULT -> null;
+        };
+
+        if (comparator != null) {
+            sortedScrolls.sort(comparator);
+        }
+
+        if (reverse) {
+            Collections.reverse(sortedScrolls);
+        }
+
+        return sortedScrolls;
+    }
+
+
     public int getScrollCount() {
         return scrolls.size();
     }
@@ -92,7 +126,7 @@ public class ClueScrollManager {
         if (scrolls.isEmpty()) {
             return null;
         }
-        return scrolls.get(selectedIndex);
+        return getSortedScrolls(config.scrollSortMode, config.reverseScrollSort).get(selectedIndex);
     }
 
     public int getSelectedScrollIndex() {
@@ -138,7 +172,7 @@ public class ClueScrollManager {
         return false;
     }
 
-    private void updateScroll(String uuid, NbtCompound scroll_data) {
+    private void updateScroll(String uuid, NbtCompound scroll_data, int invPosition) {
         // Get the scroll with the given UUID from the list.
         ClueScroll scroll = null;
         for (ClueScroll s : scrolls) {
@@ -149,20 +183,24 @@ public class ClueScrollManager {
             }
         }
 
-        // Update the scroll's completion amount.
+
         if (scroll != null) {
+            // Update the scroll's completion amount.
             for (int i = 0; i < scroll.getClueCount(); i++) {
                 ClueTask clue = scroll.getClues()
                         .get(i);
                 int completed = (int) scroll_data.getFloat("ClueScrolls.clues." + i + ".completed");
                 clue.setCompleted(completed);
             }
+
+            // Update the scroll's inventory position.
+            scroll.setInvPosition(invPosition);
         }
     }
 
-    private void addScroll(NbtCompound scrollData) {
+    private void addScroll(NbtCompound scrollData, int invPosition) {
         // Adds a new clue scroll to the list.
-        ClueScroll newScroll = ClueScrollParser.parseScrollData(scrollData);
+        ClueScroll newScroll = ClueScrollParser.parseScrollData(scrollData, invPosition);
         scrolls.add(newScroll);
         LOGGER.info("Added new clue scroll to list: {}", newScroll.getUuid());
     }
