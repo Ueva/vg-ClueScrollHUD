@@ -4,6 +4,7 @@ import io.github.ueva.cluescrollhud.commands.CommandRegistrar;
 import io.github.ueva.cluescrollhud.config.ModConfig;
 import io.github.ueva.cluescrollhud.hudelement.HudElementRegistrar;
 import io.github.ueva.cluescrollhud.keybinds.KeybindRegistrar;
+import io.github.ueva.cluescrollhud.net.RemoteDataFetcher;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.Toml4jConfigSerializer;
 import net.fabricmc.api.ClientModInitializer;
@@ -33,11 +34,15 @@ public class VgClueScrollHUDClient implements ClientModInitializer {
         KeybindRegistrar.registerKeybinds();
         LOGGER.info("...finished registering all keybinds!");
 
-
         // Register commands.
         LOGGER.info("Registering commands...");
         CommandRegistrar.registerCommands();
         LOGGER.info("...finished registering all commands.");
+
+        // Get dynamic data from the API.
+        LOGGER.info("Requesting dynamic data from the API...");
+        RemoteDataFetcher.fetchAll();
+        LOGGER.info("...finished requesting dynamic data from the API!");
     }
 }
 
