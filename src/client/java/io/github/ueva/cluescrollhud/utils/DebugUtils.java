@@ -8,21 +8,23 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.random.LocalRandom;
 import net.minecraft.util.math.random.RandomSeed;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 
 public class DebugUtils {
 
     public static ItemStack createDebugClueScroll() {
+        return createDebugClueScroll(-1); // Default: random number of tasks
+    }
 
+    public static ItemStack createDebugClueScroll(int forcedClueCount) {
         // Create the debug scroll item.
         ItemStack debugScroll = new ItemStack(Items.SLIME_BALL);
 
         // Generate the NBT data for the debug scroll.
-        NbtComponent debugScrollDataComponent = getDebugScrollDataComponent();
+        NbtComponent debugScrollDataComponent = getDebugScrollDataComponent(forcedClueCount);
 
         // Apply the NBT data to the debug scroll item.
         debugScroll.set(DataComponentTypes.CUSTOM_DATA, debugScrollDataComponent);
@@ -30,7 +32,7 @@ public class DebugUtils {
         return debugScroll;
     }
 
-    private static NbtComponent getDebugScrollDataComponent() {
+    private static NbtComponent getDebugScrollDataComponent(int forcedClueCount) {
         LocalRandom random = new LocalRandom(RandomSeed.getSeed());
 
         List<String> objectives = List.of(
@@ -45,41 +47,34 @@ public class DebugUtils {
                 "Walk %amount% blocks"
         );
 
-        int clueCount = random.nextBetweenExclusive(2, 10); // 2–9
-        Set<Integer> selectedIndices = new HashSet<>();
-        while (selectedIndices.size() < clueCount) {
+        int clueCount = forcedClueCount > 0 ? forcedClueCount : random.nextBetweenExclusive(2, 11);
+        List<String> selectedObjectives = new ArrayList<>();
+        for (int i = 0; i < clueCount; i++) {
             int index = random.nextInt(objectives.size());
-            selectedIndices.add(index);
+            selectedObjectives.add(objectives.get(index));
         }
-
-        List<String> selectedObjectives = selectedIndices.stream()
-                .map(objectives::get)
-                .toList();
 
         // Assign tier based on clue count
         String tier = switch (clueCount) {
             case 2, 3 -> "easy";
             case 4, 5 -> "normal";
             case 6, 7 -> "hard";
-            default -> "weekly";
+            case 8, 9 -> "weekly";
+            default -> "extended";
         };
 
         NbtCompound data = new NbtCompound();
 
-        // Set scroll metadata.
+        // Set scroll metadata
         data.putString("ClueScrolls.tier", tier);
         data.putString("ClueScrolls.version", "5.0.8");
-        data.putString(
-                "ClueScrolls.uuid",
-                UUID.randomUUID()
-                        .toString()
-        );
+        data.putString("ClueScrolls.uuid", UUID.randomUUID().toString());
         data.putLong("ClueScrolls.created", System.currentTimeMillis());
         data.putLong("ClueScrolls.expire", System.currentTimeMillis() + 60 * 60 * 1000);
 
-        // Set objective, amount, and completed for each clue.
-        int i = 0;
-        for (String objective : selectedObjectives) {
+        // Set clues
+        for (int i = 0; i < selectedObjectives.size(); i++) {
+            String objective = selectedObjectives.get(i);
             int maxAmount = switch (i % 4) {
                 case 0 -> 5000;
                 case 1 -> 250;
@@ -93,10 +88,8 @@ public class DebugUtils {
             data.putString("ClueScrolls.clues." + i + ".objective", objective);
             data.putFloat("ClueScrolls.clues." + i + ".amount", (float) amount);
             data.putFloat("ClueScrolls.clues." + i + ".completed", (float) completed);
-            i++;
         }
 
         return NbtComponent.of(data);
     }
-
 }
