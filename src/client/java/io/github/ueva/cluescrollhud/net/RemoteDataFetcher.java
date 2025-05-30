@@ -11,6 +11,9 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 public class RemoteDataFetcher {
@@ -18,7 +21,7 @@ public class RemoteDataFetcher {
     private static final Logger LOGGER = LoggerFactory.getLogger(VgClueScrollHUD.MOD_ID);
     private static final String BASE_URL = "https://ueva.dev/api/vgcluescroll";
     private static final Gson gson = new Gson();
-
+    private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private static long extendedExpiryTime = -1L;
 
     public static void fetchAll() {
@@ -26,6 +29,14 @@ public class RemoteDataFetcher {
             fetchExtendedExpiryTime();
             LOGGER.info("- Fetched extended expiry time: {}", extendedExpiryTime);
         });
+    }
+
+    public static void startAutoRefresh() {
+        scheduler.scheduleAtFixedRate(RemoteDataFetcher::fetchAll, 0, 5, TimeUnit.MINUTES);
+    }
+
+    public static void stopAutoRefresh() {
+        scheduler.shutdownNow();
     }
 
     private static void fetchExtendedExpiryTime() {

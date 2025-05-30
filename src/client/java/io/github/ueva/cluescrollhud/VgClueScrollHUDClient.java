@@ -8,6 +8,7 @@ import io.github.ueva.cluescrollhud.net.RemoteDataFetcher;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.Toml4jConfigSerializer;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +42,10 @@ public class VgClueScrollHUDClient implements ClientModInitializer {
 
         // Get dynamic data from the API.
         LOGGER.info("Requesting dynamic data from the API...");
-        RemoteDataFetcher.fetchAll();
+        RemoteDataFetcher.startAutoRefresh();
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
+            RemoteDataFetcher.stopAutoRefresh();
+        });
         LOGGER.info("...finished requesting dynamic data from the API!");
     }
 }
