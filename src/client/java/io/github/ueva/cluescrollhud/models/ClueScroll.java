@@ -12,9 +12,8 @@ public class ClueScroll {
     private final String uuid;
     private final String tier;
     private final long created;
-    private final long expire;
     private final ArrayList<ClueTask> clues;
-
+    private long expire;
     private int invPosition;
 
     public ClueScroll(String uuid, String tier, long created, long expire, int invPosition, ArrayList<ClueTask> clues) {
@@ -42,6 +41,10 @@ public class ClueScroll {
         return expire;
     }
 
+    public void setExpire(long expire) {
+        this.expire = expire;
+    }
+
     public int getInvPosition() {
         return invPosition;
     }
@@ -66,8 +69,8 @@ public class ClueScroll {
 
             // Sort by the first word of the objective, effectively grouping similar tasks together.
             case OBJECTIVE_TYPE -> Comparator.comparing(
-                    clueTask -> clueTask.getFormattedObjective()
-                            .split(" ")[0], String.CASE_INSENSITIVE_ORDER
+                    clueTask -> clueTask.getFormattedObjective().split(" ")[0],
+                    String.CASE_INSENSITIVE_ORDER
             );
 
             // Otherwise, use the order the clues were stored in the original NBT data.

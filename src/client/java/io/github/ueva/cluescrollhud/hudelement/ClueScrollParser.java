@@ -2,6 +2,7 @@ package io.github.ueva.cluescrollhud.hudelement;
 
 import io.github.ueva.cluescrollhud.models.ClueScroll;
 import io.github.ueva.cluescrollhud.models.ClueTask;
+import io.github.ueva.cluescrollhud.net.RemoteDataFetcher;
 import io.github.ueva.cluescrollhud.utils.TierNameUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
@@ -16,9 +17,18 @@ public class ClueScrollParser {
     public static ClueScroll parseScrollData(NbtCompound scrollData, int invPosition) {
         // Extract the scroll's UUID, tier, created time, and expiration time.
         String uuid = scrollData.getString("ClueScrolls.uuid");
-        String tier = TierNameUtils.sanitiseTierName(scrollData.getString("ClueScrolls.tier"));
+        String tier = TierNameUtils.sanitiseTierName(scrollData.getString("ClueScrolls.tier")).toLowerCase();
         long created = scrollData.getLong("ClueScrolls.created");
-        long expire = scrollData.getLong("ClueScrolls.expire");
+
+        // If the scroll's tier is "Extended", use the expiry time from the remote data fetcher, otherwise use the
+        // one from the scroll data.
+        long expire = -1L;
+        if (tier.equals("extended")) {
+            expire = RemoteDataFetcher.getExtendedExpiryTime();
+        }
+        else {
+            expire = scrollData.getLong("ClueScrolls.expire");
+        }
 
         // Extract the clues from the NBT data.
         ArrayList<ClueTask> clues = new ArrayList<>();
