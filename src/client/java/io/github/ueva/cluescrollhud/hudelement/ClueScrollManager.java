@@ -5,6 +5,7 @@ import io.github.ueva.cluescrollhud.config.ModConfig;
 import io.github.ueva.cluescrollhud.config.ScrollSortMode;
 import io.github.ueva.cluescrollhud.models.ClueScroll;
 import io.github.ueva.cluescrollhud.models.ClueTask;
+import io.github.ueva.cluescrollhud.net.RemoteDataFetcher;
 import io.github.ueva.cluescrollhud.utils.TierOrderUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
@@ -164,8 +165,7 @@ public class ClueScrollManager {
     private boolean isScrollInList(String uuid) {
         // Check if any scrolls in the list have the same UUID as the one passed in.
         for (ClueScroll scroll : scrolls) {
-            if (scroll.getUuid()
-                    .equals(uuid)) {
+            if (scroll.getUuid().equals(uuid)) {
                 return true;
             }
         }
@@ -176,8 +176,7 @@ public class ClueScrollManager {
         // Get the scroll with the given UUID from the list.
         ClueScroll scroll = null;
         for (ClueScroll s : scrolls) {
-            if (s.getUuid()
-                    .equals(uuid)) {
+            if (s.getUuid().equals(uuid)) {
                 scroll = s;
                 break;
             }
@@ -187,14 +186,18 @@ public class ClueScrollManager {
         if (scroll != null) {
             // Update the scroll's completion amount.
             for (int i = 0; i < scroll.getClueCount(); i++) {
-                ClueTask clue = scroll.getClues()
-                        .get(i);
+                ClueTask clue = scroll.getClues().get(i);
                 int completed = (int) scroll_data.getFloat("ClueScrolls.clues." + i + ".completed");
                 clue.setCompleted(completed);
             }
 
             // Update the scroll's inventory position.
             scroll.setInvPosition(invPosition);
+
+            // If the scroll is an extended scroll, update its expiry time.
+            if (scroll.getTier().equals("extended")) {
+                scroll.setExpire(RemoteDataFetcher.getExtendedExpiryTime());
+            }
         }
     }
 

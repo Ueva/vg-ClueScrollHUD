@@ -45,6 +45,9 @@ dependencies {
     modApi("com.terraformersmc:modmenu:${project.modmenu_version}") {
         exclude(group: "net.fabricmc.fabric-api")
     }
+
+    // Google Gson.
+    modImplementation "com.google.code.gson:gson:${project.gson_version}"
 }
 
 processResources {
