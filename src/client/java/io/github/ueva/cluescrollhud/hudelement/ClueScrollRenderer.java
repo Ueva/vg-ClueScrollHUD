@@ -126,7 +126,7 @@ public class ClueScrollRenderer {
         Text text = Text.literal(scrollIndexText);
         int scaledX = (int) (contentLeft / smallTextScale);
         int scaledY = (int) (cursorY / smallTextScale);
-        context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, 0xFFFFFF);
+        context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, 0xFFFFFFFF);
         maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * smallTextScale));
         matrices.popMatrix();
 
@@ -166,14 +166,14 @@ public class ClueScrollRenderer {
 
             // Task Objective.
             text = Text.literal(clue.getFormattedObjective() + ".");
-            context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, 0xFFFFFF);
+            context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, 0xFFFFFFFF);
             maxTextWidth = Math.max(maxTextWidth, textRenderer.getWidth(text));
             cursorY += textRenderer.fontHeight;
 
             // Task Progress.
             if (clue.isCompleted()) {
                 text = Text.literal("Completed!");
-                context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, 0x55FF55);
+                context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, 0xFF55FF55);
             }
             else {
                 String progress =
@@ -183,12 +183,12 @@ public class ClueScrollRenderer {
                 // Lerp progress colour between red (0xFF5555) and green (0x55FF55).
                 if (config.colourByProgress) {
                     int progressColour =
-                            ColorHelper.lerp((float) clue.getPercentCompleted() / 100.0f, 0xFF5555, 0x55FF55);
+                            ColorHelper.lerp((float) clue.getPercentCompleted() / 100.0f, 0xFFFF5555, 0xFF55FF55);
                     context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, progressColour);
                 }
                 // Use default colour (minecraft gold).
                 else {
-                    context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, 0xFFAA00);
+                    context.drawTextWithShadow(textRenderer, text, contentLeft, cursorY, 0xFFFFAA00);
                 }
 
 
@@ -207,7 +207,7 @@ public class ClueScrollRenderer {
             String timeLeftText = "Expires in " + DateTimeUtils.formatDuration(timeLeft);
             text = Text.literal(timeLeftText);
 
-            int color = timeLeft < 60 * 60 * 1000 ? 0xAA0000 : 0xAAAAAA; // Red if less than 1 hour, grey otherwise.
+            int color = timeLeft < 60 * 60 * 1000 ? 0xFFAA0000 : 0xFFAAAAAA; // Red if less than 1 hour, grey otherwise.
             scaledX = (int) (contentLeft / smallTextScale);
             scaledY = (int) (cursorY / smallTextScale);
             context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, color);
@@ -219,7 +219,7 @@ public class ClueScrollRenderer {
             text = Text.literal(expiredText);
             scaledX = (int) (contentLeft / smallTextScale);
             scaledY = (int) (cursorY / smallTextScale);
-            context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, 0xAA0000);
+            context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, 0xFFAA0000);
             maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * smallTextScale));
         }
 
@@ -261,6 +261,6 @@ public class ClueScrollRenderer {
         );
 
         // Draw the "no cluescrolls" message.
-        context.drawTextWithShadow(textRenderer, text, contentLeft + PADDING, MARGIN + PADDING, 0xFFFFFF);
+        context.drawTextWithShadow(textRenderer, text, contentLeft + PADDING, MARGIN + PADDING, 0xFFFFFFFF);
     }
 }
