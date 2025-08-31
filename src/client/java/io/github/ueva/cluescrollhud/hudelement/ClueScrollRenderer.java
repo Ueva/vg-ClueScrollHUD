@@ -107,9 +107,44 @@ public class ClueScrollRenderer {
         return maxWidth;
     }
 
+    private int measureTotalHeight(TextRenderer textRenderer, ClueScroll scroll) {
+        float large = config.largeTextScale;
+        float small = config.smallTextScale;
+
+        int height = 0;
+        height += (int) (textRenderer.fontHeight * small);  // "Scroll X of Y"
+        height += SPACING;
+        height += (int) (textRenderer.fontHeight * large);  // "<Tier> Clue Scroll"
+        height += SPACING;
+
+        for (ClueTask clue : scroll.getClues()) {
+            if (config.hideCompleted && clue.isCompleted()) {
+                continue;
+            }
+            height += textRenderer.fontHeight;               // objective
+            height += textRenderer.fontHeight;               // progress/completed
+            height += SPACING;
+        }
+
+        height += (int) (textRenderer.fontHeight * small);  // expiration line
+        // (no trailing SPACING after expiry in your current layout)
+        return height;
+    }
+
+
     private void renderClueScrollContent(DrawContext context, TextRenderer textRenderer, ClueScroll selectedScroll,
                                          int selectedIndex, int totalScrolls, int contentLeft, int maxTextWidth) {
         Matrix3x2fStack matrices = context.getMatrices();
+
+        // --- Measure bounds and draw background --------------------------------
+        int contentTop = MARGIN + PADDING;
+        int contentHeight = measureTotalHeight(textRenderer, selectedScroll);
+        int backgroundLeft = contentLeft - PADDING;
+        int backgroundTop = MARGIN;
+        int backgroundRight = contentLeft + maxTextWidth + PADDING;
+        int backgroundBottom = contentTop + contentHeight + PADDING;
+
+        context.fill(contentLeft - PADDING, MARGIN, backgroundRight, backgroundBottom, 0x7F000000);
 
         float largeTextScale = config.largeTextScale;
         float smallTextScale = config.smallTextScale;
@@ -224,14 +259,6 @@ public class ClueScrollRenderer {
         }
 
         matrices.popMatrix();
-
-        cursorY += (int) (textRenderer.fontHeight * smallTextScale);
-
-        // ─── Draw Background ──────────────────────────────────────────────
-        int backgroundRight = contentLeft + maxTextWidth + PADDING;
-        int backgroundBottom = cursorY + PADDING;
-
-        context.fill(contentLeft - PADDING, MARGIN, backgroundRight, backgroundBottom, 0x7F000000);
 
     }
 
