@@ -7,9 +7,9 @@ import io.github.ueva.cluescrollhud.utils.DateTimeUtils;
 import io.github.ueva.cluescrollhud.utils.TierColourUtils;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.ColorHelper;
+import org.joml.Matrix3x2fStack;
 
 import java.util.ArrayList;
 
@@ -33,10 +33,10 @@ public class ClueScrollRenderer {
                        int totalScrolls) {
 
         // Apply global scale and offset from config.
-        MatrixStack matrices = context.getMatrices();
-        matrices.push();
-        matrices.translate(config.x, config.y, 0.0f);
-        matrices.scale(config.globalScale, config.globalScale, 1.0f);
+        Matrix3x2fStack matrices = context.getMatrices();
+        matrices.pushMatrix();
+        matrices.translate(config.x, config.y);
+        matrices.scale(config.globalScale, config.globalScale);
 
         // Render the currently selected scroll.
         if (totalScrolls > 0) {
@@ -47,7 +47,7 @@ public class ClueScrollRenderer {
             renderNoClueScrolls(context, textRenderer);
         }
 
-        matrices.pop();
+        matrices.popMatrix();
     }
 
     public void renderClueScrolls(DrawContext context, TextRenderer textRenderer, ClueScroll selectedScroll,
@@ -81,8 +81,7 @@ public class ClueScrollRenderer {
 
         // Tier name
         String tier = scroll.getTier();
-        String tierText = tier.substring(0, 1)
-                .toUpperCase() + tier.substring(1) + " Clue Scroll";
+        String tierText = tier.substring(0, 1).toUpperCase() + tier.substring(1) + " Clue Scroll";
         maxWidth = Math.max(maxWidth, (int) (textRenderer.getWidth(tierText) * large));
 
         for (ClueTask clue : scroll.getClues()) {
@@ -110,7 +109,7 @@ public class ClueScrollRenderer {
 
     private void renderClueScrollContent(DrawContext context, TextRenderer textRenderer, ClueScroll selectedScroll,
                                          int selectedIndex, int totalScrolls, int contentLeft, int maxTextWidth) {
-        MatrixStack matrices = context.getMatrices();
+        Matrix3x2fStack matrices = context.getMatrices();
 
         float largeTextScale = config.largeTextScale;
         float smallTextScale = config.smallTextScale;
@@ -120,8 +119,8 @@ public class ClueScrollRenderer {
         int cursorY = MARGIN + PADDING;
 
         // ─── Draw "Scroll X of Y" ──────────────────────────────────────────────
-        matrices.push();
-        matrices.scale(smallTextScale, smallTextScale, 1.0f);
+        matrices.pushMatrix();
+        matrices.scale(smallTextScale, smallTextScale);
 
         String scrollIndexText = "Scroll " + (selectedIndex + 1) + " of " + totalScrolls;
         Text text = Text.literal(scrollIndexText);
@@ -129,18 +128,16 @@ public class ClueScrollRenderer {
         int scaledY = (int) (cursorY / smallTextScale);
         context.drawTextWithShadow(textRenderer, text, scaledX, scaledY, 0xFFFFFF);
         maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * smallTextScale));
-        matrices.pop();
+        matrices.popMatrix();
 
         cursorY += (int) (textRenderer.fontHeight * smallTextScale) + SPACING;
 
         // ─── Draw "<Tier> Clue Scroll" ────────────────────────────────────────
-        matrices.push();
-        matrices.scale(largeTextScale, largeTextScale, 1.0f);
+        matrices.pushMatrix();
+        matrices.scale(largeTextScale, largeTextScale);
 
-        String tierName = selectedScroll.getTier()
-                .substring(0, 1)
-                .toUpperCase() + selectedScroll.getTier()
-                .substring(1) + " Clue Scroll";
+        String tierName = selectedScroll.getTier().substring(0, 1).toUpperCase() + selectedScroll.getTier()
+                                                                                                 .substring(1) + " " + "Clue Scroll";
         text = Text.literal(tierName);
         scaledX = (int) (contentLeft / largeTextScale);
         scaledY = (int) (cursorY / largeTextScale);
@@ -152,7 +149,7 @@ public class ClueScrollRenderer {
                 TierColourUtils.getColour(selectedScroll.getTier())
         );
         maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * largeTextScale));
-        matrices.pop();
+        matrices.popMatrix();
 
         cursorY += (int) (textRenderer.fontHeight * largeTextScale) + SPACING;
 
@@ -201,8 +198,8 @@ public class ClueScrollRenderer {
         }
 
         // ─── Draw expiration ───────────────────────────────────────────────────
-        matrices.push();
-        matrices.scale(smallTextScale, smallTextScale, 1.0f);
+        matrices.pushMatrix();
+        matrices.scale(smallTextScale, smallTextScale);
 
         long timeLeft = selectedScroll.getExpire() - System.currentTimeMillis();
         // If there is time left, render time until expiration.
@@ -226,7 +223,7 @@ public class ClueScrollRenderer {
             maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.getWidth(text) * smallTextScale));
         }
 
-        matrices.pop();
+        matrices.popMatrix();
 
         cursorY += (int) (textRenderer.fontHeight * smallTextScale);
 
@@ -260,7 +257,6 @@ public class ClueScrollRenderer {
                 MARGIN,
                 contentLeft + PADDING + textWidth + PADDING,
                 MARGIN + PADDING + textHeight + PADDING,
-                0,
                 0x7F000000
         );
 
