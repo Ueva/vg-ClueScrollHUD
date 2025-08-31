@@ -16,9 +16,10 @@ public class ClueScrollParser {
 
     public static ClueScroll parseScrollData(NbtCompound scrollData, int invPosition) {
         // Extract the scroll's UUID, tier, created time, and expiration time.
-        String uuid = scrollData.getString("ClueScrolls.uuid");
-        String tier = TierNameUtils.sanitiseTierName(scrollData.getString("ClueScrolls.tier")).toLowerCase();
-        long created = scrollData.getLong("ClueScrolls.created");
+        String uuid = scrollData.getString("ClueScrolls.uuid").orElseThrow();
+        String rawTier = scrollData.getString("ClueScrolls.tier").orElseThrow();
+        String tier = TierNameUtils.sanitiseTierName(rawTier).toLowerCase();
+        long created = scrollData.getLong("ClueScrolls.created").orElseThrow();
 
         // If the scroll's tier is "Extended", use the expiry time from the remote data fetcher, otherwise use the
         // one from the scroll data.
@@ -27,7 +28,7 @@ public class ClueScrollParser {
             expire = RemoteDataFetcher.getExtendedExpiryTime();
         }
         else {
-            expire = scrollData.getLong("ClueScrolls.expire");
+            expire = scrollData.getLong("ClueScrolls.expire").orElseThrow();
         }
 
         // Extract the clues from the NBT data.
@@ -36,12 +37,12 @@ public class ClueScrollParser {
         String baseKeyFormat = "ClueScrolls.clues.%d.%s";
 
         while (scrollData.contains(String.format(baseKeyFormat, n, "objective"))) {
-            String objective = scrollData.getString(String.format(baseKeyFormat, n, "objective"));
-            int amount = (int) scrollData.getFloat(String.format(baseKeyFormat, n, "amount"));
-            int completed = (int) scrollData.getFloat(String.format(baseKeyFormat, n, "completed"));
+            String objective = scrollData.getString(String.format(baseKeyFormat, n, "objective")).orElseThrow();
+            float amount = scrollData.getFloat(String.format(baseKeyFormat, n, "amount")).orElseThrow();
+            float completed = scrollData.getFloat(String.format(baseKeyFormat, n, "completed")).orElseThrow();
 
             // Create a new ClueTask and add it to the list.
-            clues.add(new ClueTask(objective, amount, completed));
+            clues.add(new ClueTask(objective, (int) amount, (int) completed));
             n++;
         }
 

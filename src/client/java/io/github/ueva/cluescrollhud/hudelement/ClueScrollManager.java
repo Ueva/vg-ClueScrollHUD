@@ -63,7 +63,7 @@ public class ClueScrollManager {
                     // Check if the NBT data contains the "ClueScrolls.uuid" key.
                     if (scrollData.contains("ClueScrolls.uuid")) {
                         // Extract clue scroll data.
-                        String uuid = scrollData.getString("ClueScrolls.uuid");
+                        String uuid = scrollData.getString("ClueScrolls.uuid").orElseThrow();
                         seenUUIDs.add(uuid);
 
                         // If this is a new scroll, add it to the list.
@@ -187,8 +187,8 @@ public class ClueScrollManager {
             // Update the scroll's completion amount.
             for (int i = 0; i < scroll.getClueCount(); i++) {
                 ClueTask clue = scroll.getClues().get(i);
-                int completed = (int) scroll_data.getFloat("ClueScrolls.clues." + i + ".completed");
-                clue.setCompleted(completed);
+                float completed = scroll_data.getFloat("ClueScrolls.clues." + i + ".completed").orElseThrow();
+                clue.setCompleted((int) completed);
             }
 
             // Update the scroll's inventory position.
