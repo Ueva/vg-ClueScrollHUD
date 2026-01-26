@@ -25,13 +25,7 @@
       "io.github.ueva.cluescrollhud.config.ModMenuIntegration"
     ]
   },
-  "mixins": [
-    "vg-cluescrollhud.mixins.json",
-    {
-      "config": "vg-cluescrollhud.client.mixins.json",
-      "environment": "client"
-    }
-  ],
+  "mixins": [],
   "depends": {
     "fabricloader": ">=0.17.2",
     "minecraft": "~1.21.8",
