@@ -4,40 +4,38 @@ import io.github.ueva.cluescrollhud.VgClueScrollHUD;
 import io.github.ueva.cluescrollhud.config.ModConfig;
 import io.github.ueva.cluescrollhud.models.ClueScroll;
 import me.shedaniel.autoconfig.AutoConfig;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 public class ClueScrollHudElement {
 
-    public static final Identifier CLUESCROLL_HUD_LAYER = Identifier.of(VgClueScrollHUD.MOD_ID, "cluescroll_hud_layer");
+    public static final Identifier CLUESCROLL_HUD_LAYER =
+            Identifier.fromNamespaceAndPath(VgClueScrollHUD.MOD_ID, "cluescroll_hud_layer");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VgClueScrollHUD.MOD_ID);
-    private static final ModConfig config = AutoConfig.getConfigHolder(ModConfig.class)
-            .getConfig();
+    private static final ModConfig config = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
     private static final ClueScrollManager scrollManager = new ClueScrollManager(config);
     private static final ClueScrollRenderer scrollRenderer = new ClueScrollRenderer(config);
 
     private static boolean isVisible = true;
     private static long nextUpdateTime = 0;
 
-    public static void render(DrawContext context, RenderTickCounter tickCounter) {
+    public static void render(GuiGraphics context, DeltaTracker tickCounter) {
 
         // Obtain the client instance.
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
 
         // Check whether the F3 debug screen is visible.
-        boolean isDebugScreenVisible = MinecraftClient.getInstance()
-                .getDebugHud()
-                .shouldShowDebugHud();
+        boolean isDebugScreenVisible = Minecraft.getInstance().getDebugOverlay().showDebugScreen();
 
         // Check whether the HUD is currently hidden.
-        boolean isHudHidden = client.options.hudHidden;
+        boolean isHudHidden = client.options.hideGui;
 
         // Update the local clue scroll list.
         if (System.currentTimeMillis() > nextUpdateTime) {
@@ -47,7 +45,7 @@ public class ClueScrollHudElement {
 
         // Render the ClueScrollHudElement if it's enabled, the HUD is visible, and the F3 debug screen is not visible.
         if (isVisible && !isDebugScreenVisible && !isHudHidden) {
-            TextRenderer textRenderer = client.textRenderer;
+            Font textRenderer = client.font;
 
             // Get information about the selected scroll.
             int selectedIndex = scrollManager.getSelectedScrollIndex();
