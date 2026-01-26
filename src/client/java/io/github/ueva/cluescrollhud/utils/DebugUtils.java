@@ -1,12 +1,12 @@
 package io.github.ueva.cluescrollhud.utils;
 
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.random.LocalRandom;
-import net.minecraft.util.math.random.RandomSeed;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.levelgen.RandomSupport;
+import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,16 +24,16 @@ public class DebugUtils {
         ItemStack debugScroll = new ItemStack(Items.SLIME_BALL);
 
         // Generate the NBT data for the debug scroll.
-        NbtComponent debugScrollDataComponent = getDebugScrollDataComponent(forcedClueCount);
+        CustomData debugScrollDataComponent = getDebugScrollDataComponent(forcedClueCount);
 
         // Apply the NBT data to the debug scroll item.
-        debugScroll.set(DataComponentTypes.CUSTOM_DATA, debugScrollDataComponent);
+        debugScroll.set(DataComponents.CUSTOM_DATA, debugScrollDataComponent);
 
         return debugScroll;
     }
 
-    private static NbtComponent getDebugScrollDataComponent(int forcedClueCount) {
-        LocalRandom random = new LocalRandom(RandomSeed.getSeed());
+    private static CustomData getDebugScrollDataComponent(int forcedClueCount) {
+        SingleThreadedRandomSource random = new SingleThreadedRandomSource(RandomSupport.generateUniqueSeed());
 
         List<String> objectives = List.of(
                 "Ride a pig %amount% blocks",
@@ -47,7 +47,7 @@ public class DebugUtils {
                 "Walk %amount% blocks"
         );
 
-        int clueCount = forcedClueCount > 0 ? forcedClueCount : random.nextBetweenExclusive(2, 11);
+        int clueCount = forcedClueCount > 0 ? forcedClueCount : random.nextInt(2, 11);
         List<String> selectedObjectives = new ArrayList<>();
         for (int i = 0; i < clueCount; i++) {
             int index = random.nextInt(objectives.size());
@@ -63,7 +63,7 @@ public class DebugUtils {
             default -> "extended";
         };
 
-        NbtCompound data = new NbtCompound();
+        CompoundTag data = new CompoundTag();
 
         // Set scroll metadata
         data.putString("ClueScrolls.tier", tier);
@@ -90,6 +90,6 @@ public class DebugUtils {
             data.putFloat("ClueScrolls.clues." + i + ".completed", (float) completed);
         }
 
-        return NbtComponent.of(data);
+        return CustomData.of(data);
     }
 }

@@ -4,17 +4,17 @@ import io.github.ueva.cluescrollhud.models.ClueScroll;
 import io.github.ueva.cluescrollhud.models.ClueTask;
 import io.github.ueva.cluescrollhud.net.RemoteDataFetcher;
 import io.github.ueva.cluescrollhud.utils.TierNameUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 
 import java.util.ArrayList;
 
 
 public class ClueScrollParser {
 
-    public static ClueScroll parseScrollData(NbtCompound scrollData, int invPosition) {
+    public static ClueScroll parseScrollData(CompoundTag scrollData, int invPosition) {
         // Extract the scroll's UUID, tier, created time, and expiration time.
         String uuid = scrollData.getString("ClueScrolls.uuid").orElseThrow();
         String rawTier = scrollData.getString("ClueScrolls.tier").orElseThrow();
@@ -51,12 +51,12 @@ public class ClueScrollParser {
 
     public static ClueScroll parseScrollItem(ItemStack scrollItem, int invPosition) {
         // Check if the item stack is empty or does not contain the custom data component.
-        if (scrollItem.isEmpty() || !scrollItem.contains(DataComponentTypes.CUSTOM_DATA)) {
+        if (scrollItem.isEmpty() || !scrollItem.has(DataComponents.CUSTOM_DATA)) {
             return null;
         }
 
         // Extract the custom data component from the item stack.
-        NbtComponent customData = scrollItem.get(DataComponentTypes.CUSTOM_DATA);
+        CustomData customData = scrollItem.get(DataComponents.CUSTOM_DATA);
 
         // If the custom data component is null, return null.
         if (customData == null) {
@@ -64,7 +64,7 @@ public class ClueScrollParser {
         }
 
         // Extract the NBT data from the custom data component.
-        NbtCompound scrollData = customData.copyNbt();
+        CompoundTag scrollData = customData.copyTag();
 
         // Check if the NBT data contains the "ClueScrolls.uuid" key.
         if (!scrollData.contains("ClueScrolls.uuid")) {

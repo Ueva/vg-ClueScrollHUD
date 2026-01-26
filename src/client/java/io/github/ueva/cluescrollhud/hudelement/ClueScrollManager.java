@@ -7,12 +7,12 @@ import io.github.ueva.cluescrollhud.models.ClueScroll;
 import io.github.ueva.cluescrollhud.models.ClueTask;
 import io.github.ueva.cluescrollhud.net.RemoteDataFetcher;
 import io.github.ueva.cluescrollhud.utils.TierOrderUtils;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +35,7 @@ public class ClueScrollManager {
         this.config = config;
     }
 
-    public void updateScrolls(MinecraftClient client) {
+    public void updateScrolls(Minecraft client) {
         // Ensure the client and the player are not null.
         if (client == null || client.player == null) {
             return;
@@ -45,20 +45,20 @@ public class ClueScrollManager {
         ArrayList<String> seenUUIDs = new ArrayList<>();
 
         // Iterate through all the scrolls in the player's inventory.
-        PlayerInventory inventory = client.player.getInventory();
-        for (int i = 0; i < inventory.size(); i++) {
+        Inventory inventory = client.player.getInventory();
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
             // Get the item stack in the current slot.
-            ItemStack itemStack = inventory.getStack(i);
+            ItemStack itemStack = inventory.getItem(i);
 
             // Check that the item stack is not empty and contains the custom data component.
-            if (!itemStack.isEmpty() && itemStack.contains(DataComponentTypes.CUSTOM_DATA)) {
-                NbtComponent customData = itemStack.get(DataComponentTypes.CUSTOM_DATA);
+            if (!itemStack.isEmpty() && itemStack.has(DataComponents.CUSTOM_DATA)) {
+                CustomData customData = itemStack.get(DataComponents.CUSTOM_DATA);
 
                 // If the custom data component is not null.
                 if (customData != null) {
 
                     // Extract the NBT data from the custom data component.
-                    NbtCompound scrollData = customData.copyNbt();
+                    CompoundTag scrollData = customData.copyTag();
 
                     // Check if the NBT data contains the "ClueScrolls.uuid" key.
                     if (scrollData.contains("ClueScrolls.uuid")) {
@@ -172,7 +172,7 @@ public class ClueScrollManager {
         return false;
     }
 
-    private void updateScroll(String uuid, NbtCompound scroll_data, int invPosition) {
+    private void updateScroll(String uuid, CompoundTag scroll_data, int invPosition) {
         // Get the scroll with the given UUID from the list.
         ClueScroll scroll = null;
         for (ClueScroll s : scrolls) {
@@ -201,7 +201,7 @@ public class ClueScrollManager {
         }
     }
 
-    private void addScroll(NbtCompound scrollData, int invPosition) {
+    private void addScroll(CompoundTag scrollData, int invPosition) {
         // Adds a new clue scroll to the list.
         ClueScroll newScroll = ClueScrollParser.parseScrollData(scrollData, invPosition);
         scrolls.add(newScroll);
