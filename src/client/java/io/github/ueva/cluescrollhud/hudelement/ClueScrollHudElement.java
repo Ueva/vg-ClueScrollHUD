@@ -1,6 +1,7 @@
 package io.github.ueva.cluescrollhud.hudelement;
 
 import io.github.ueva.cluescrollhud.VgClueScrollHUD;
+import io.github.ueva.cluescrollhud.config.ElementDisplayMode;
 import io.github.ueva.cluescrollhud.config.ModConfig;
 import io.github.ueva.cluescrollhud.models.ClueScroll;
 import me.shedaniel.autoconfig.AutoConfig;
@@ -53,8 +54,27 @@ public class ClueScrollHudElement {
 
             // Render the clue scrolls.
             if (totalScrolls > 0) {
-                ClueScroll selectedScroll = scrollManager.getSelectedScroll();
-                scrollRenderer.render(context, textRenderer, selectedScroll, selectedIndex, totalScrolls);
+                if (config.displayMode == ElementDisplayMode.COLLATED) {
+                    int activeScrollCount = scrollManager.getNonExpiredScrollCount();
+
+                    // Collated mode: show all tasks from all non-expired scrolls in one HUD panel.
+                    if (activeScrollCount > 0) {
+                        scrollRenderer.renderCollated(
+                                context,
+                                textRenderer,
+                                scrollManager.getCollatedTasks(),
+                                activeScrollCount
+                        );
+                    }
+                    else {
+                        scrollRenderer.render(context, textRenderer);
+                    }
+                }
+                else {
+                    // Single-scroll mode: show one selected scroll at a time.
+                    ClueScroll selectedScroll = scrollManager.getSelectedScroll();
+                    scrollRenderer.render(context, textRenderer, selectedScroll, selectedIndex, totalScrolls);
+                }
             }
             else {
                 scrollRenderer.render(context, textRenderer);

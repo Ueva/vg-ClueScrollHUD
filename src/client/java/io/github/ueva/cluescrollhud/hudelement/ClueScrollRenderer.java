@@ -12,6 +12,7 @@ import net.minecraft.util.ARGB;
 import org.joml.Matrix3x2fStack;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class ClueScrollRenderer {
@@ -50,6 +51,27 @@ public class ClueScrollRenderer {
         matrices.popMatrix();
     }
 
+    public void renderCollated(GuiGraphics context, Font textRenderer, List<CollatedTaskEntry> collatedTasks,
+                               int totalScrolls) {
+
+        // Apply global scale and offset from config.
+        Matrix3x2fStack matrices = context.pose();
+        matrices.pushMatrix();
+        matrices.translate(config.x, config.y);
+        matrices.scale(config.globalScale, config.globalScale);
+
+        // Render all scroll tasks in a single collated panel.
+        if (totalScrolls > 0) {
+            renderCollatedContent(context, textRenderer, collatedTasks, totalScrolls);
+        }
+        // Render the "no scrolls" message.
+        else {
+            renderNoClueScrolls(context, textRenderer);
+        }
+
+        matrices.popMatrix();
+    }
+
     public void renderClueScrolls(GuiGraphics context, Font textRenderer, ClueScroll selectedScroll,
                                   int selectedIndex, int totalScrolls) {
         int maxTextWidth = measureMaxTextWidth(textRenderer, selectedScroll, selectedIndex, totalScrolls);
@@ -68,6 +90,47 @@ public class ClueScrollRenderer {
                 maxTextWidth
         );
 
+    }
+
+    private void renderCollatedContent(GuiGraphics context, Font textRenderer, List<CollatedTaskEntry> collatedTasks,
+                                       int totalScrolls) {
+        int maxTextWidth = measureCollatedMaxTextWidth(textRenderer, collatedTasks, totalScrolls);
+        int contentLeft = config.rightAlign ?
+                (int) (context.guiWidth() / config.globalScale) - (MARGIN + PADDING + maxTextWidth) :
+                MARGIN + PADDING;
+
+        // Measure bounds and draw background.
+        int contentTop = MARGIN + PADDING;
+        int contentHeight = measureCollatedTotalHeight(textRenderer, collatedTasks);
+        int backgroundRight = contentLeft + maxTextWidth + PADDING;
+        int backgroundBottom = contentTop + contentHeight + PADDING;
+
+        context.fill(contentLeft - PADDING, MARGIN, backgroundRight, backgroundBottom, 0x7F000000);
+
+        Matrix3x2fStack matrices = context.pose();
+        float smallTextScale = config.smallTextScale;
+        int cursorY = MARGIN + PADDING;
+
+        // Draw "N Clue Scrolls".
+        matrices.pushMatrix();
+        matrices.scale(smallTextScale, smallTextScale);
+
+        String headerText = totalScrolls + " Clue Scrolls";
+        Component text = Component.literal(headerText);
+        int scaledX = (int) (contentLeft / smallTextScale);
+        int scaledY = (int) (cursorY / smallTextScale);
+        context.drawString(textRenderer, text, scaledX, scaledY, 0xFFFFFFFF);
+        matrices.popMatrix();
+
+        cursorY += (int) (textRenderer.lineHeight * smallTextScale) + SPACING;
+
+        // Draw clues from all scrolls.
+        for (CollatedTaskEntry entry : collatedTasks) {
+            // Omit the tier prefix when the same objective appears on scrolls of different tiers.
+            String tierPrefix = entry.spansMultipleTiers() ? null : formatTierPrefix(entry.scroll().getTier());
+            int tierColour = entry.spansMultipleTiers() ? 0xFFFFFFFF : TierColourUtils.getColour(entry.scroll().getTier());
+            cursorY = renderTaskRow(context, textRenderer, entry.task(), contentLeft, cursorY, tierPrefix, tierColour);
+        }
     }
 
     private int measureMaxTextWidth(Font textRenderer, ClueScroll scroll, int selectedIndex, int totalScrolls) {
@@ -89,13 +152,7 @@ public class ClueScrollRenderer {
                 continue;
             }
 
-            String objective = clue.getFormattedObjective() + ".";
-            maxWidth = Math.max(maxWidth, textRenderer.width(objective));
-
-            String progress = clue.isCompleted() ?
-                    "Completed!" :
-                    "Progress: " + clue.getCompleted() + "/" + clue.getAmount() + " (" + clue.getPercentCompleted() + "%)";
-            maxWidth = Math.max(maxWidth, textRenderer.width(progress));
+            maxWidth = Math.max(maxWidth, measureTaskRowWidth(textRenderer, clue, null));
         }
 
         // Expiration
@@ -103,6 +160,33 @@ public class ClueScrollRenderer {
                 "Expires in " + DateTimeUtils.formatDuration(scroll.getExpire() - System.currentTimeMillis()) :
                 "Scroll expired!";
         maxWidth = Math.max(maxWidth, (int) (textRenderer.width(expireText) * small));
+
+        return maxWidth;
+    }
+
+    private int measureCollatedMaxTextWidth(Font textRenderer, List<CollatedTaskEntry> collatedTasks,
+                                            int totalScrolls) {
+        float small = config.smallTextScale;
+        int maxWidth = (int) (textRenderer.width(totalScrolls + " Clue Scrolls") * small);
+
+        for (CollatedTaskEntry entry : collatedTasks) {
+            String tierPrefix = entry.spansMultipleTiers() ? null : formatTierPrefix(entry.scroll().getTier());
+            maxWidth = Math.max(maxWidth, measureTaskRowWidth(textRenderer, entry.task(), tierPrefix));
+        }
+
+        return maxWidth;
+    }
+
+    private int measureTaskRowWidth(Font textRenderer, ClueTask clue, String tierPrefix) {
+        int maxWidth = 0;
+
+        String objective = (tierPrefix != null ? tierPrefix : "") + clue.getFormattedObjective() + ".";
+        maxWidth = Math.max(maxWidth, textRenderer.width(objective));
+
+        String progress = clue.isCompleted() ?
+                "Completed!" :
+                "Progress: " + clue.getCompleted() + "/" + clue.getAmount() + " (" + clue.getPercentCompleted() + "%)";
+        maxWidth = Math.max(maxWidth, textRenderer.width(progress));
 
         return maxWidth;
     }
@@ -131,6 +215,22 @@ public class ClueScrollRenderer {
         return height;
     }
 
+    private int measureCollatedTotalHeight(Font textRenderer, List<CollatedTaskEntry> collatedTasks) {
+        float small = config.smallTextScale;
+
+        int height = (int) (textRenderer.lineHeight * small);  // "N Clue Scrolls"
+        height += SPACING;
+
+        for (int i = 0; i < collatedTasks.size(); i++) {
+            height += textRenderer.lineHeight;  // objective
+            height += textRenderer.lineHeight;  // progress/completed
+            if (i < collatedTasks.size() - 1) {
+                height += SPACING;
+            }
+        }
+
+        return height;
+    }
 
     private void renderClueScrollContent(GuiGraphics context, Font textRenderer, ClueScroll selectedScroll,
                                          int selectedIndex, int totalScrolls, int contentLeft, int maxTextWidth) {
@@ -193,37 +293,8 @@ public class ClueScrollRenderer {
                 continue;
             }
 
-            // Task Objective.
-            text = Component.literal(clue.getFormattedObjective() + ".");
-            context.drawString(textRenderer, text, contentLeft, cursorY, 0xFFFFFFFF);
-            maxTextWidth = Math.max(maxTextWidth, textRenderer.width(text));
-            cursorY += textRenderer.lineHeight;
-
-            // Task Progress.
-            if (clue.isCompleted()) {
-                text = Component.literal("Completed!");
-                context.drawString(textRenderer, text, contentLeft, cursorY, 0xFF55FF55);
-            }
-            else {
-                String progress =
-                        "Progress: " + clue.getCompleted() + "/" + clue.getAmount() + " (" + clue.getPercentCompleted() + "%)";
-                text = Component.literal(progress);
-
-                // Lerp progress colour between red (0xFF5555) and green (0x55FF55).
-                if (config.colourByProgress) {
-                    int progressColour =
-                            ARGB.srgbLerp((float) clue.getPercentCompleted() / 100.0f, 0xFFFF5555, 0xFF55FF55);
-                    context.drawString(textRenderer, text, contentLeft, cursorY, progressColour);
-                }
-                // Use default colour (minecraft gold).
-                else {
-                    context.drawString(textRenderer, text, contentLeft, cursorY, 0xFFFFAA00);
-                }
-
-
-            }
-            maxTextWidth = Math.max(maxTextWidth, textRenderer.width(text));
-            cursorY += textRenderer.lineHeight + SPACING;
+            cursorY = renderTaskRow(context, textRenderer, clue, contentLeft, cursorY, null, 0xFFFFFFFF);
+            maxTextWidth = Math.max(maxTextWidth, measureTaskRowWidth(textRenderer, clue, null));
         }
 
         // ─── Draw expiration ───────────────────────────────────────────────────
@@ -254,6 +325,60 @@ public class ClueScrollRenderer {
 
         matrices.popMatrix();
 
+    }
+
+    /**
+     * Renders a single clue task row (objective + progress/completed lines).
+     * When {@code tierPrefix} is provided, it is drawn in {@code tierColour} before the objective text.
+     */
+    private int renderTaskRow(GuiGraphics context, Font textRenderer, ClueTask clue, int contentLeft, int cursorY,
+                              String tierPrefix, int tierColour) {
+        Component text;
+
+        // Task Objective.
+        if (tierPrefix != null && !tierPrefix.isEmpty()) {
+            text = Component.literal(tierPrefix);
+            context.drawString(textRenderer, text, contentLeft, cursorY, tierColour);
+            int prefixWidth = textRenderer.width(text);
+            text = Component.literal(clue.getFormattedObjective() + ".");
+            context.drawString(textRenderer, text, contentLeft + prefixWidth, cursorY, 0xFFFFFFFF);
+        }
+        else {
+            text = Component.literal(clue.getFormattedObjective() + ".");
+            context.drawString(textRenderer, text, contentLeft, cursorY, 0xFFFFFFFF);
+        }
+
+        cursorY += textRenderer.lineHeight;
+
+        // Task Progress.
+        if (clue.isCompleted()) {
+            text = Component.literal("Completed!");
+            context.drawString(textRenderer, text, contentLeft, cursorY, 0xFF55FF55);
+        }
+        else {
+            String progress =
+                    "Progress: " + clue.getCompleted() + "/" + clue.getAmount() + " (" + clue.getPercentCompleted() + "%)";
+            text = Component.literal(progress);
+
+            // Lerp progress colour between red (0xFF5555) and green (0x55FF55).
+            if (config.colourByProgress) {
+                int progressColour =
+                        ARGB.srgbLerp((float) clue.getPercentCompleted() / 100.0f, 0xFFFF5555, 0xFF55FF55);
+                context.drawString(textRenderer, text, contentLeft, cursorY, progressColour);
+            }
+            // Use default colour (minecraft gold).
+            else {
+                context.drawString(textRenderer, text, contentLeft, cursorY, 0xFFFFAA00);
+            }
+        }
+
+        return cursorY + textRenderer.lineHeight + SPACING;
+    }
+
+    /** Formats a scroll tier as a collated-mode label prefix, e.g. "[Easy] ". */
+    private String formatTierPrefix(String tier) {
+        String capitalized = tier.substring(0, 1).toUpperCase() + tier.substring(1);
+        return "[" + capitalized + "] ";
     }
 
     public void renderNoClueScrolls(GuiGraphics context, Font textRenderer) {

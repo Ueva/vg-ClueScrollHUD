@@ -1,11 +1,13 @@
 package io.github.ueva.cluescrollhud.hudelement;
 
 import io.github.ueva.cluescrollhud.VgClueScrollHUD;
+import io.github.ueva.cluescrollhud.config.ElementDisplayMode;
 import io.github.ueva.cluescrollhud.config.ModConfig;
 import io.github.ueva.cluescrollhud.config.ScrollSortMode;
 import io.github.ueva.cluescrollhud.models.ClueScroll;
 import io.github.ueva.cluescrollhud.models.ClueTask;
 import io.github.ueva.cluescrollhud.net.RemoteDataFetcher;
+import io.github.ueva.cluescrollhud.utils.TaskSortUtils;
 import io.github.ueva.cluescrollhud.utils.TierOrderUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
@@ -19,7 +21,9 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class ClueScrollManager {
@@ -123,6 +127,16 @@ public class ClueScrollManager {
         return scrolls.size();
     }
 
+    public int getNonExpiredScrollCount() {
+        int count = 0;
+        for (ClueScroll scroll : scrolls) {
+            if (!scroll.isExpired()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public ClueScroll getSelectedScroll() {
         if (scrolls.isEmpty()) {
             return null;
@@ -134,7 +148,83 @@ public class ClueScrollManager {
         return selectedIndex;
     }
 
+    public List<CollatedTaskEntry> getCollatedTasks() {
+        // Group tasks by their objective template.
+        Map<String, CollatedTaskEntry> groupedTasks = new HashMap<>();
+
+        for (ClueScroll scroll : scrolls) {
+            // Expired scrolls are excluded from the collated HUD.
+            if (scroll.isExpired()) {
+                continue;
+            }
+
+            for (int i = 0; i < scroll.getClueCount(); i++) {
+                ClueTask task = scroll.getClueTask(i);
+                String objectiveKey = task.getObjective();
+
+                if (groupedTasks.containsKey(objectiveKey)) {
+                    CollatedTaskEntry existing = groupedTasks.get(objectiveKey);
+                    ClueTask mergedTask = new ClueTask(
+                            objectiveKey,
+                            existing.task().getAmount() + task.getAmount(),
+                            existing.task().getCompleted() + task.getCompleted()
+                    );
+                    boolean spansMultipleTiers = existing.spansMultipleTiers()
+                            || !scroll.getTier().equals(existing.scroll().getTier());
+                    groupedTasks.put(objectiveKey, new CollatedTaskEntry(
+                            existing.scroll(),
+                            mergedTask,
+                            existing.taskIndex(),
+                            spansMultipleTiers
+                    ));
+                }
+                else {
+                    groupedTasks.put(objectiveKey, new CollatedTaskEntry(scroll, task, i));
+                }
+            }
+        }
+
+        List<CollatedTaskEntry> collatedTasks = new ArrayList<>();
+
+        for (CollatedTaskEntry entry : groupedTasks.values()) {
+            // Skip completed clues if the config option is enabled.
+            if (config.hideCompleted && entry.task().isCompleted()) {
+                continue;
+            }
+            collatedTasks.add(entry);
+        }
+
+        Comparator<ClueTask> taskComparator = TaskSortUtils.comparator(config.taskSortMode);
+        Comparator<CollatedTaskEntry> comparator;
+
+        if (taskComparator != null) {
+            // Sort by task criteria first, then by scroll position and NBT task order.
+            comparator = Comparator.comparing(CollatedTaskEntry::task, taskComparator)
+                    .thenComparingInt(entry -> entry.scroll().getInvPosition())
+                    .thenComparingInt(CollatedTaskEntry::taskIndex);
+        }
+        else {
+            // In default mode, preserve inventory order within and across scrolls.
+            comparator = Comparator.comparingInt((CollatedTaskEntry entry) -> entry.scroll().getInvPosition())
+                    .thenComparingInt(CollatedTaskEntry::taskIndex);
+        }
+
+        collatedTasks.sort(comparator);
+
+        // If necessary, reverse the order of the (sorted or unsorted) collated tasks.
+        if (config.reverseTaskSort) {
+            Collections.reverse(collatedTasks);
+        }
+
+        return collatedTasks;
+    }
+
     public void prevScroll() {
+        // Scroll cycling is disabled in collated mode because all scrolls are shown at once.
+        if (config.displayMode == ElementDisplayMode.COLLATED) {
+            return;
+        }
+
         int clueScrollCount = scrolls.size();
 
         // If there are no clue scrolls in the player's inventory, return.
@@ -149,6 +239,11 @@ public class ClueScrollManager {
     }
 
     public void nextScroll() {
+        // Scroll cycling is disabled in collated mode because all scrolls are shown at once.
+        if (config.displayMode == ElementDisplayMode.COLLATED) {
+            return;
+        }
+
         int clueScrollCount = scrolls.size();
 
         // If there are no clue scrolls in the player's inventory, return.
