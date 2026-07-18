@@ -221,13 +221,7 @@ public class ClueScrollRenderer {
         int height = (int) (textRenderer.lineHeight * small);  // "N Clue Scrolls"
         height += SPACING;
 
-        for (int i = 0; i < collatedTasks.size(); i++) {
-            height += textRenderer.lineHeight;  // objective
-            height += textRenderer.lineHeight;  // progress/completed
-            if (i < collatedTasks.size() - 1) {
-                height += SPACING;
-            }
-        }
+        height += collatedTasks.size() * (2 * textRenderer.lineHeight + SPACING);
 
         return height;
     }
