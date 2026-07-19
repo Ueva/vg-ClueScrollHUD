@@ -1,5 +1,6 @@
 package io.github.ueva.cluescrollhud.hudelement;
 
+import io.github.ueva.cluescrollhud.config.CollatedGroupMode;
 import io.github.ueva.cluescrollhud.config.ModConfig;
 import io.github.ueva.cluescrollhud.models.ClueScroll;
 import io.github.ueva.cluescrollhud.models.ClueTask;
@@ -51,7 +52,7 @@ public class ClueScrollRenderer {
         matrices.popMatrix();
     }
 
-    public void renderCollated(GuiGraphics context, Font textRenderer, List<CollatedTaskEntry> collatedTasks,
+    public void renderCollated(GuiGraphics context, Font textRenderer, List<CollatedGroup> collatedGroups,
                                int totalScrolls) {
 
         // Apply global scale and offset from config.
@@ -62,7 +63,7 @@ public class ClueScrollRenderer {
 
         // Render all scroll tasks in a single collated panel.
         if (totalScrolls > 0) {
-            renderCollatedContent(context, textRenderer, collatedTasks, totalScrolls);
+            renderCollatedContent(context, textRenderer, collatedGroups, totalScrolls);
         }
         // Render the "no scrolls" message.
         else {
@@ -92,16 +93,16 @@ public class ClueScrollRenderer {
 
     }
 
-    private void renderCollatedContent(GuiGraphics context, Font textRenderer, List<CollatedTaskEntry> collatedTasks,
+    private void renderCollatedContent(GuiGraphics context, Font textRenderer, List<CollatedGroup> collatedGroups,
                                        int totalScrolls) {
-        int maxTextWidth = measureCollatedMaxTextWidth(textRenderer, collatedTasks, totalScrolls);
+        int maxTextWidth = measureCollatedMaxTextWidth(textRenderer, collatedGroups, totalScrolls);
         int contentLeft = config.rightAlign ?
                 (int) (context.guiWidth() / config.globalScale) - (MARGIN + PADDING + maxTextWidth) :
                 MARGIN + PADDING;
 
         // Measure bounds and draw background.
         int contentTop = MARGIN + PADDING;
-        int contentHeight = measureCollatedTotalHeight(textRenderer, collatedTasks);
+        int contentHeight = measureCollatedTotalHeight(textRenderer, collatedGroups);
         int backgroundRight = contentLeft + maxTextWidth + PADDING;
         int backgroundBottom = contentTop + contentHeight + PADDING;
 
@@ -124,13 +125,49 @@ public class ClueScrollRenderer {
 
         cursorY += (int) (textRenderer.lineHeight * smallTextScale) + SPACING;
 
-        // Draw clues from all scrolls.
-        for (CollatedTaskEntry entry : collatedTasks) {
-            // Omit the tier prefix when the same objective appears on scrolls of different tiers.
-            String tierPrefix = entry.spansMultipleTiers() ? null : formatTierPrefix(entry.scroll().getTier());
-            int tierColour = entry.spansMultipleTiers() ? 0xFFFFFFFF : TierColourUtils.getColour(entry.scroll().getTier());
-            cursorY = renderTaskRow(context, textRenderer, entry.task(), contentLeft, cursorY, tierPrefix, tierColour);
+        // Draw groups and their clue rows.
+        for (CollatedGroup group : collatedGroups) {
+            if (group.header() != null) {
+                matrices.pushMatrix();
+                matrices.scale(smallTextScale, smallTextScale);
+
+                text = Component.literal(group.header());
+                scaledX = (int) (contentLeft / smallTextScale);
+                scaledY = (int) (cursorY / smallTextScale);
+                int headerColour = group.headerColour() != null ? group.headerColour() : 0xFFFFFFFF;
+                context.drawString(textRenderer, text, scaledX, scaledY, headerColour);
+                matrices.popMatrix();
+
+                cursorY += (int) (textRenderer.lineHeight * smallTextScale) + SPACING;
+            }
+
+            for (CollatedTaskEntry entry : group.entries()) {
+                String tierPrefix = resolveTierPrefix(entry);
+                int tierColour = tierPrefix != null
+                        ? TierColourUtils.getColour(entry.scroll().getTier())
+                        : 0xFFFFFFFF;
+                cursorY = renderTaskRow(
+                        context,
+                        textRenderer,
+                        entry.task(),
+                        contentLeft,
+                        cursorY,
+                        tierPrefix,
+                        tierColour
+                );
+            }
         }
+    }
+
+    private String resolveTierPrefix(CollatedTaskEntry entry) {
+        return switch (config.collatedGroupMode) {
+            // Merge: omit the tier prefix when the same objective spans multiple tiers.
+            case MERGE_OBJECTIVES -> entry.spansMultipleTiers() ? null : formatTierPrefix(entry.scroll().getTier());
+            // By Scroll: header already shows the tier.
+            case BY_SCROLL -> null;
+            // By Type: keep a per-row tier prefix so the source scroll is visible.
+            case BY_OBJECTIVE_TYPE -> formatTierPrefix(entry.scroll().getTier());
+        };
     }
 
     private int measureMaxTextWidth(Font textRenderer, ClueScroll scroll, int selectedIndex, int totalScrolls) {
@@ -164,14 +201,20 @@ public class ClueScrollRenderer {
         return maxWidth;
     }
 
-    private int measureCollatedMaxTextWidth(Font textRenderer, List<CollatedTaskEntry> collatedTasks,
+    private int measureCollatedMaxTextWidth(Font textRenderer, List<CollatedGroup> collatedGroups,
                                             int totalScrolls) {
         float small = config.smallTextScale;
         int maxWidth = (int) (textRenderer.width(totalScrolls + " Clue Scrolls") * small);
 
-        for (CollatedTaskEntry entry : collatedTasks) {
-            String tierPrefix = entry.spansMultipleTiers() ? null : formatTierPrefix(entry.scroll().getTier());
-            maxWidth = Math.max(maxWidth, measureTaskRowWidth(textRenderer, entry.task(), tierPrefix));
+        for (CollatedGroup group : collatedGroups) {
+            if (group.header() != null) {
+                maxWidth = Math.max(maxWidth, (int) (textRenderer.width(group.header()) * small));
+            }
+
+            for (CollatedTaskEntry entry : group.entries()) {
+                String tierPrefix = resolveTierPrefix(entry);
+                maxWidth = Math.max(maxWidth, measureTaskRowWidth(textRenderer, entry.task(), tierPrefix));
+            }
         }
 
         return maxWidth;
@@ -215,13 +258,21 @@ public class ClueScrollRenderer {
         return height;
     }
 
-    private int measureCollatedTotalHeight(Font textRenderer, List<CollatedTaskEntry> collatedTasks) {
+    private int measureCollatedTotalHeight(Font textRenderer, List<CollatedGroup> collatedGroups) {
         float small = config.smallTextScale;
 
         int height = (int) (textRenderer.lineHeight * small);  // "N Clue Scrolls"
         height += SPACING;
 
-        height += collatedTasks.size() * (2 * textRenderer.lineHeight + SPACING);
+        for (CollatedGroup group : collatedGroups) {
+            if (group.header() != null) {
+                height += (int) (textRenderer.lineHeight * small);
+                height += SPACING;
+            }
+
+            // Each task row: objective + progress + trailing SPACING (from renderTaskRow).
+            height += group.entries().size() * (2 * textRenderer.lineHeight + SPACING);
+        }
 
         return height;
     }

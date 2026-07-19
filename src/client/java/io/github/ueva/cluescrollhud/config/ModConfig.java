@@ -54,12 +54,17 @@ public class ModConfig implements ConfigData {
     @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
     public ElementDisplayMode displayMode = ElementDisplayMode.SINGLE_SCROLL;
 
-    // Which scroll to show first when cycling between scrolls in single-scroll mode.
+    // How tasks are grouped when display mode is collated.
+    @ConfigEntry.Category("Behaviour")
+    @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+    public CollatedGroupMode collatedGroupMode = CollatedGroupMode.MERGE_OBJECTIVES;
+
+    // Which scroll to show first when cycling, or section order when grouping by scroll.
     @ConfigEntry.Category("Behaviour")
     @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
     public ScrollSortMode scrollSortMode = ScrollSortMode.INV_POSITION;
 
-    // Reverse the scroll cycle order in single-scroll mode.
+    // Reverse the scroll cycle order, or reverse section order when grouping by scroll.
     @ConfigEntry.Category("Behaviour")
     public boolean reverseScrollSort = false;
 

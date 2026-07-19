@@ -62,7 +62,7 @@ public class ClueScrollHudElement {
                         scrollRenderer.renderCollated(
                                 context,
                                 textRenderer,
-                                scrollManager.getCollatedTasks(),
+                                scrollManager.getCollatedGroups(),
                                 activeScrollCount
                         );
                     }

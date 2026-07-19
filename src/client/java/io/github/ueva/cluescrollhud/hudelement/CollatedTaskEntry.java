@@ -5,7 +5,8 @@ import io.github.ueva.cluescrollhud.models.ClueTask;
 
 /**
  * A clue task to display in collated HUD mode.
- * Tasks with the same objective template are merged into one entry with combined progress.
+ * In merge mode, tasks with the same objective template are combined into one entry with summed progress.
+ * In By Scroll / By Objective Type modes, each entry is a single unmerged task.
  */
 public record CollatedTaskEntry(ClueScroll scroll, ClueTask task, int taskIndex, boolean spansMultipleTiers) {
 
