@@ -1,11 +1,15 @@
 package io.github.ueva.cluescrollhud.hudelement;
 
 import io.github.ueva.cluescrollhud.VgClueScrollHUD;
+import io.github.ueva.cluescrollhud.config.CollatedGroupMode;
+import io.github.ueva.cluescrollhud.config.ElementDisplayMode;
 import io.github.ueva.cluescrollhud.config.ModConfig;
 import io.github.ueva.cluescrollhud.config.ScrollSortMode;
 import io.github.ueva.cluescrollhud.models.ClueScroll;
 import io.github.ueva.cluescrollhud.models.ClueTask;
 import io.github.ueva.cluescrollhud.net.RemoteDataFetcher;
+import io.github.ueva.cluescrollhud.utils.TaskSortUtils;
+import io.github.ueva.cluescrollhud.utils.TierColourUtils;
 import io.github.ueva.cluescrollhud.utils.TierOrderUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
@@ -19,7 +23,11 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
 
 
 public class ClueScrollManager {
@@ -123,6 +131,16 @@ public class ClueScrollManager {
         return scrolls.size();
     }
 
+    public int getNonExpiredScrollCount() {
+        int count = 0;
+        for (ClueScroll scroll : scrolls) {
+            if (!scroll.isExpired()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public ClueScroll getSelectedScroll() {
         if (scrolls.isEmpty()) {
             return null;
@@ -134,7 +152,166 @@ public class ClueScrollManager {
         return selectedIndex;
     }
 
+    public List<CollatedGroup> getCollatedGroups() {
+        return switch (config.collatedGroupMode) {
+            case MERGE_OBJECTIVES -> List.of(new CollatedGroup(null, null, buildMergedEntries()));
+            case BY_SCROLL -> buildGroupsByScroll();
+            case BY_OBJECTIVE_TYPE -> buildGroupsByObjectiveType();
+        };
+    }
+
+    private List<CollatedTaskEntry> buildMergedEntries() {
+        Map<String, CollatedTaskEntry> groupedTasks = new HashMap<>();
+
+        for (ClueScroll scroll : scrolls) {
+            if (scroll.isExpired()) {
+                continue;
+            }
+
+            for (int i = 0; i < scroll.getClueCount(); i++) {
+                ClueTask task = scroll.getClueTask(i);
+                String objectiveKey = task.getObjective();
+
+                if (groupedTasks.containsKey(objectiveKey)) {
+                    CollatedTaskEntry existing = groupedTasks.get(objectiveKey);
+                    ClueTask mergedTask = new ClueTask(
+                            objectiveKey,
+                            existing.task().getAmount() + task.getAmount(),
+                            existing.task().getCompleted() + task.getCompleted()
+                    );
+                    boolean spansMultipleTiers = existing.spansMultipleTiers()
+                            || !scroll.getTier().equals(existing.scroll().getTier());
+                    groupedTasks.put(objectiveKey, new CollatedTaskEntry(
+                            existing.scroll(),
+                            mergedTask,
+                            existing.taskIndex(),
+                            spansMultipleTiers
+                    ));
+                }
+                else {
+                    groupedTasks.put(objectiveKey, new CollatedTaskEntry(scroll, task, i));
+                }
+            }
+        }
+
+        List<CollatedTaskEntry> collatedTasks = new ArrayList<>();
+        for (CollatedTaskEntry entry : groupedTasks.values()) {
+            if (config.hideCompleted && entry.task().isCompleted()) {
+                continue;
+            }
+            collatedTasks.add(entry);
+        }
+
+        sortEntries(collatedTasks);
+        return collatedTasks;
+    }
+
+    private List<CollatedGroup> buildGroupsByScroll() {
+        List<CollatedGroup> groups = new ArrayList<>();
+
+        for (ClueScroll scroll : getSortedScrolls(config.scrollSortMode, config.reverseScrollSort)) {
+            if (scroll.isExpired()) {
+                continue;
+            }
+
+            List<CollatedTaskEntry> entries = entriesForScroll(scroll);
+            if (entries.isEmpty()) {
+                continue;
+            }
+
+            String tier = scroll.getTier();
+            String header = capitalize(tier) + " Clue Scroll";
+            groups.add(new CollatedGroup(header, TierColourUtils.getColour(tier), entries));
+        }
+
+        return groups;
+    }
+
+    private List<CollatedGroup> buildGroupsByObjectiveType() {
+        // TreeMap keeps group keys sorted case-insensitively.
+        Map<String, List<CollatedTaskEntry>> buckets = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+        for (ClueScroll scroll : scrolls) {
+            if (scroll.isExpired()) {
+                continue;
+            }
+
+            for (int i = 0; i < scroll.getClueCount(); i++) {
+                ClueTask task = scroll.getClueTask(i);
+                if (config.hideCompleted && task.isCompleted()) {
+                    continue;
+                }
+
+                String typeKey = objectiveTypeKey(task);
+                buckets.computeIfAbsent(typeKey, ignored -> new ArrayList<>())
+                        .add(new CollatedTaskEntry(scroll, task, i));
+            }
+        }
+
+        List<CollatedGroup> groups = new ArrayList<>();
+        for (Map.Entry<String, List<CollatedTaskEntry>> bucket : buckets.entrySet()) {
+            List<CollatedTaskEntry> entries = bucket.getValue();
+            sortEntries(entries);
+            groups.add(new CollatedGroup(capitalize(bucket.getKey()), 0xFFFFFFFF, entries));
+        }
+
+        return groups;
+    }
+
+    private List<CollatedTaskEntry> entriesForScroll(ClueScroll scroll) {
+        List<CollatedTaskEntry> entries = new ArrayList<>();
+
+        for (int i = 0; i < scroll.getClueCount(); i++) {
+            ClueTask task = scroll.getClueTask(i);
+            if (config.hideCompleted && task.isCompleted()) {
+                continue;
+            }
+            entries.add(new CollatedTaskEntry(scroll, task, i));
+        }
+
+        sortEntries(entries);
+        return entries;
+    }
+
+    private void sortEntries(List<CollatedTaskEntry> entries) {
+        Comparator<ClueTask> taskComparator = TaskSortUtils.comparator(config.taskSortMode);
+        Comparator<CollatedTaskEntry> comparator;
+
+        if (taskComparator != null) {
+            comparator = Comparator.comparing(CollatedTaskEntry::task, taskComparator)
+                    .thenComparingInt(entry -> entry.scroll().getInvPosition())
+                    .thenComparingInt(CollatedTaskEntry::taskIndex);
+        }
+        else {
+            comparator = Comparator.comparingInt((CollatedTaskEntry entry) -> entry.scroll().getInvPosition())
+                    .thenComparingInt(CollatedTaskEntry::taskIndex);
+        }
+
+        entries.sort(comparator);
+
+        if (config.reverseTaskSort) {
+            Collections.reverse(entries);
+        }
+    }
+
+    private static String objectiveTypeKey(ClueTask task) {
+        String[] parts = task.getFormattedObjective().split(" ");
+        return parts.length > 0 ? parts[0] : "";
+    }
+
+    private static String capitalize(String value) {
+        if (value == null || value.isEmpty()) {
+            return value;
+        }
+        return value.substring(0, 1).toUpperCase(Locale.ROOT) + value.substring(1);
+    }
+
     public void prevScroll() {
+        // Scroll cycling is disabled in collated mode because all scrolls are shown at once.
+        if (config.displayMode == ElementDisplayMode.COLLATED) {
+            return;
+        }
+
         int clueScrollCount = scrolls.size();
 
         // If there are no clue scrolls in the player's inventory, return.
@@ -149,6 +326,11 @@ public class ClueScrollManager {
     }
 
     public void nextScroll() {
+        // Scroll cycling is disabled in collated mode because all scrolls are shown at once.
+        if (config.displayMode == ElementDisplayMode.COLLATED) {
+            return;
+        }
+
         int clueScrollCount = scrolls.size();
 
         // If there are no clue scrolls in the player's inventory, return.

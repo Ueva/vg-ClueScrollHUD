@@ -49,16 +49,28 @@ public class ModConfig implements ConfigData {
     @ConfigEntry.Category("Behaviour")
     public boolean colourByProgress = true;
 
-    // Clue task sorting mode.
+    // How scroll information is displayed on the HUD.
     @ConfigEntry.Category("Behaviour")
+    @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+    public ElementDisplayMode displayMode = ElementDisplayMode.SINGLE_SCROLL;
+
+    // How tasks are grouped when display mode is collated.
+    @ConfigEntry.Category("Behaviour")
+    @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+    public CollatedGroupMode collatedGroupMode = CollatedGroupMode.MERGE_OBJECTIVES;
+
+    // Which scroll to show first when cycling, or section order when grouping by scroll.
+    @ConfigEntry.Category("Behaviour")
+    @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
     public ScrollSortMode scrollSortMode = ScrollSortMode.INV_POSITION;
 
-    // Reverse scroll sort order.
+    // Reverse the scroll cycle order, or reverse section order when grouping by scroll.
     @ConfigEntry.Category("Behaviour")
     public boolean reverseScrollSort = false;
 
-    // Clue task sorting mode.
+    // How tasks are ordered within a scroll, or across the collated task list.
     @ConfigEntry.Category("Behaviour")
+    @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
     public TaskSortMode taskSortMode = TaskSortMode.DEFAULT;
 
     // Reverse task sort order.
