@@ -7,7 +7,7 @@ import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ public class ClueScrollHudElement {
     private static boolean isVisible = true;
     private static long nextUpdateTime = 0;
 
-    public static void render(GuiGraphics context, DeltaTracker tickCounter) {
+    public static void render(GuiGraphicsExtractor context, DeltaTracker tickCounter) {
 
         // Obtain the client instance.
         Minecraft client = Minecraft.getInstance();
@@ -35,7 +35,7 @@ public class ClueScrollHudElement {
         boolean isDebugScreenVisible = Minecraft.getInstance().getDebugOverlay().showDebugScreen();
 
         // Check whether the HUD is currently hidden.
-        boolean isHudHidden = client.options.hideGui;
+        boolean isHudHidden = client.gui.hud.isHidden();
 
         // Update the local clue scroll list.
         if (System.currentTimeMillis() > nextUpdateTime) {

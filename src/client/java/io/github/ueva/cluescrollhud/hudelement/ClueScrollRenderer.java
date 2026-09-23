@@ -6,7 +6,7 @@ import io.github.ueva.cluescrollhud.models.ClueTask;
 import io.github.ueva.cluescrollhud.utils.DateTimeUtils;
 import io.github.ueva.cluescrollhud.utils.TierColourUtils;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
 import org.joml.Matrix3x2fStack;
@@ -25,11 +25,11 @@ public class ClueScrollRenderer {
         this.config = config;
     }
 
-    public void render(GuiGraphics context, Font textRenderer) {
+    public void render(GuiGraphicsExtractor context, Font textRenderer) {
         render(context, textRenderer, null, 0, 0);
     }
 
-    public void render(GuiGraphics context, Font textRenderer, ClueScroll selectedScroll, int selectedIndex,
+    public void render(GuiGraphicsExtractor context, Font textRenderer, ClueScroll selectedScroll, int selectedIndex,
                        int totalScrolls) {
 
         // Apply global scale and offset from config.
@@ -50,7 +50,7 @@ public class ClueScrollRenderer {
         matrices.popMatrix();
     }
 
-    public void renderClueScrolls(GuiGraphics context, Font textRenderer, ClueScroll selectedScroll,
+    public void renderClueScrolls(GuiGraphicsExtractor context, Font textRenderer, ClueScroll selectedScroll,
                                   int selectedIndex, int totalScrolls) {
         int maxTextWidth = measureMaxTextWidth(textRenderer, selectedScroll, selectedIndex, totalScrolls);
 
@@ -132,7 +132,7 @@ public class ClueScrollRenderer {
     }
 
 
-    private void renderClueScrollContent(GuiGraphics context, Font textRenderer, ClueScroll selectedScroll,
+    private void renderClueScrollContent(GuiGraphicsExtractor context, Font textRenderer, ClueScroll selectedScroll,
                                          int selectedIndex, int totalScrolls, int contentLeft, int maxTextWidth) {
         Matrix3x2fStack matrices = context.pose();
 
@@ -161,7 +161,7 @@ public class ClueScrollRenderer {
         Component text = Component.literal(scrollIndexText);
         int scaledX = (int) (contentLeft / smallTextScale);
         int scaledY = (int) (cursorY / smallTextScale);
-        context.drawString(textRenderer, text, scaledX, scaledY, 0xFFFFFFFF);
+        context.text(textRenderer, text, scaledX, scaledY, 0xFFFFFFFF);
         maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.width(text) * smallTextScale));
         matrices.popMatrix();
 
@@ -176,7 +176,7 @@ public class ClueScrollRenderer {
         text = Component.literal(tierName);
         scaledX = (int) (contentLeft / largeTextScale);
         scaledY = (int) (cursorY / largeTextScale);
-        context.drawString(textRenderer, text, scaledX, scaledY, TierColourUtils.getColour(selectedScroll.getTier()));
+        context.text(textRenderer, text, scaledX, scaledY, TierColourUtils.getColour(selectedScroll.getTier()));
         maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.width(text) * largeTextScale));
         matrices.popMatrix();
 
@@ -195,14 +195,14 @@ public class ClueScrollRenderer {
 
             // Task Objective.
             text = Component.literal(clue.getFormattedObjective() + ".");
-            context.drawString(textRenderer, text, contentLeft, cursorY, 0xFFFFFFFF);
+            context.text(textRenderer, text, contentLeft, cursorY, 0xFFFFFFFF);
             maxTextWidth = Math.max(maxTextWidth, textRenderer.width(text));
             cursorY += textRenderer.lineHeight;
 
             // Task Progress.
             if (clue.isCompleted()) {
                 text = Component.literal("Completed!");
-                context.drawString(textRenderer, text, contentLeft, cursorY, 0xFF55FF55);
+                context.text(textRenderer, text, contentLeft, cursorY, 0xFF55FF55);
             }
             else {
                 String progress =
@@ -213,11 +213,11 @@ public class ClueScrollRenderer {
                 if (config.colourByProgress) {
                     int progressColour =
                             ARGB.srgbLerp((float) clue.getPercentCompleted() / 100.0f, 0xFFFF5555, 0xFF55FF55);
-                    context.drawString(textRenderer, text, contentLeft, cursorY, progressColour);
+                    context.text(textRenderer, text, contentLeft, cursorY, progressColour);
                 }
                 // Use default colour (minecraft gold).
                 else {
-                    context.drawString(textRenderer, text, contentLeft, cursorY, 0xFFFFAA00);
+                    context.text(textRenderer, text, contentLeft, cursorY, 0xFFFFAA00);
                 }
 
 
@@ -239,7 +239,7 @@ public class ClueScrollRenderer {
             int color = timeLeft < 60 * 60 * 1000 ? 0xFFAA0000 : 0xFFAAAAAA; // Red if less than 1 hour, grey otherwise.
             scaledX = (int) (contentLeft / smallTextScale);
             scaledY = (int) (cursorY / smallTextScale);
-            context.drawString(textRenderer, text, scaledX, scaledY, color);
+            context.text(textRenderer, text, scaledX, scaledY, color);
             maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.width(text) * smallTextScale));
         }
         // Otherwise, render expired message.
@@ -248,7 +248,7 @@ public class ClueScrollRenderer {
             text = Component.literal(expiredText);
             scaledX = (int) (contentLeft / smallTextScale);
             scaledY = (int) (cursorY / smallTextScale);
-            context.drawString(textRenderer, text, scaledX, scaledY, 0xFFAA0000);
+            context.text(textRenderer, text, scaledX, scaledY, 0xFFAA0000);
             maxTextWidth = Math.max(maxTextWidth, (int) (textRenderer.width(text) * smallTextScale));
         }
 
@@ -256,7 +256,7 @@ public class ClueScrollRenderer {
 
     }
 
-    public void renderNoClueScrolls(GuiGraphics context, Font textRenderer) {
+    public void renderNoClueScrolls(GuiGraphicsExtractor context, Font textRenderer) {
         if (config.hideWhenNoClue) {
             return;
         }
@@ -282,6 +282,6 @@ public class ClueScrollRenderer {
         );
 
         // Draw the "no cluescrolls" message.
-        context.drawString(textRenderer, text, contentLeft + PADDING, MARGIN + PADDING, 0xFFFFFFFF);
+        context.text(textRenderer, text, contentLeft + PADDING, MARGIN + PADDING, 0xFFFFFFFF);
     }
 }
